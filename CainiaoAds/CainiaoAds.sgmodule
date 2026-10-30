@@ -1,0 +1,41 @@
+#!name=菜鸟净化 · Surge 原生版
+#!desc=保留完整首页、我的与支付宝小程序净化；Surge Mac 5.9.0+ / iOS 5.14.0+。
+#!author=nympheon；上游 ddgksf2013
+#!homepage=https://github.com/nympheon/My-Surge-Module
+#!category=去广告
+# Source: ddgksf2013/Rewrite/AdBlock/CainiaoAds.conf; frozen 2026-10-31.
+
+[Map Local]
+# S0030 | 通用广告，保留 _home 例外
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.guoguo\.nbnetflow\.ads\.(?!.*_home) data-type=text data=""
+# S0032 | mshow
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.guoguo\.nbnetflow\.ads\.mshow\.cn data-type=text data=""
+# S0034 | 首页底部商品
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.nbcps\.presentation\.fetch\.cn data-type=text data=""
+# S0036 | 底部角标
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.app\.home\.v\d+\.bottom\.area data-type=text data=""
+# S0040 | 小程序广告
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.cainiao\.guoguo\.nbnetflow\.ads\. data-type=text data=""
+# S0042 | 小程序商品推广新
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.alimama\.abyss\.unionpage\.get data-type=text data=""
+# S0044 | 小程序商品推广旧
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.cainiao\.adx\.flyad\.getad data-type=text data=""
+# S0046 | 匿名选择
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.cainiao\.nbmensa\.research\.researchservice\.consultmerge data-type=text data=""
+
+[Body Rewrite]
+# S0022 | 我的页：按原 truthy 条件删除推广/资产/钱包
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.app\.e2e\.engine\.page\.fetch '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" and (.data.data|type)=="object" then .data.data |= with_entries(select(((.key=="banner" or .key=="activity" or .key=="asset" or .key=="vip" or .key=="wallet") and .value!=null and .value!=false and .value!=0 and .value!="")|not)) else . end) catch $original'
+# S0024 | 合并首页：仅处理原 0..3 子响应，子响应失败也透传
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.nbpresentation\.homepage\.merge\.get\.cn '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" then .data |= with_entries(if (.key|test("^mtop\\.cainiao\\.nbpresentation\\.protocol\\.homepage\\.get\\.cn@[0-3]$")) and (.value|ok) and (.value.data.result.dataList|type)=="array" and all(.value.data.result.dataList[];type=="object" and (.type|type)=="string") then .value.data.result.dataList |= map(select(.type!="big_banner_area_v870" and .type!="todo_list_v860")) else . end) else . end) catch $original'
+# S0026 | 首页惊喜福利与待办区
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.nbpresentation\.protocol\.homepage\.get\.cn '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" and (.data.result|type)=="object" and (.data.result.dataList|type)=="array" and all(.data.result.dataList[];type=="object" and (.type|type)=="string") then .data.result.dataList |= map(select(.type!="big_banner_area_v870" and .type!="todo_list_v860")) else . end) catch $original'
+# S0028 | 搜索推荐词
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.adkeyword '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" and (.data.result|type)=="object" and .data.result.adHotKeywords!=null and .data.result.adHotKeywords!=false and .data.result.adHotKeywords!=0 and .data.result.adHotKeywords!="" then .data.result.adHotKeywords=[] else . end) catch $original'
+
+[Script]
+# S0020 | 请求阶段 AMDC
+Cainiao-AMDC = type=http-request,pattern=^http:\/\/amdc\.m\.taobao\.com,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/CainiaoAds/js/amdc.js,timeout=5
+
+[MITM]
+hostname = %APPEND% *.cainiao.com, guide-acs.m.taobao.com, acs4miniapp-inner.m.taobao.com

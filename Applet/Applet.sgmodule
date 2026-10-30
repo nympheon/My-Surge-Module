@@ -1,0 +1,25 @@
+#!name=微信小程序净化 · Surge 原生版
+#!desc=保留上游特定小程序及旧公众号规则；按枚举域名解密；Surge Mac 5.9.0+ / iOS 5.14.0+。
+#!author=nympheon；上游 ddgksf2013、Cuttlefish
+#!homepage=https://github.com/nympheon/My-Surge-Module
+#!category=去广告
+# Source: ddgksf2013/Rewrite/AdBlock/Applet.conf; frozen 2026-10-31.
+
+[Map Local]
+# S0029 | 便利蜂
+^https?:\/\/api\.blibee\.com\/cvsnotify-api\/cvs\/notify\/app\/banner\/v\d+$ data-type=text data=""
+# S0031 | 顺丰速运
+^https?:\/\/ucmp\.sf-express\.com\/proxy\/operation-platform\/info-flow-adver\/query$ data-type=text data=""
+
+[Body Rewrite]
+# S0033 | 保留旧公众号规则，非当前可用性保证
+http-response ^(http|https):\/\/mp\.weixin\.qq\.com\/mp\/getappmsgad advertisement ddgksf2013
+
+[Script]
+# S0035 | 掌上公交：仅精确属性和值
+Applet-Bus = type=http-response,pattern=^https?:\/\/wx\.mygolbs\.com\/WxBusServer\/ApiData\.do,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/Applet/js/bus.js,requires-body=true,max-size=1048576,timeout=5
+# S0037 | 通用 URL 谓词保留；仅下列枚举 MITM 主机可解密
+Applet-Posts = type=http-response,pattern="^(https?://)?([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}(:\d+)?/wp-json/[a-zA-Z0-9_-]+/(mp\/)?v\d/posts",script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/Applet/js/applet.js,requires-body=true,max-size=1048576,timeout=5
+
+[MITM]
+hostname = %APPEND% api.blibee.com, ucmp.sf-express.com, www.bbkj.work, wx.wxqqurl.cn, wp3.lobdol.cn, awg.enmonster.com, mp.weixin.qq.com, wx.mygolbs.com, jabi.coding.net, api.bspapp.com, 3dd0be8a-54fe-43ff-a0e7-f670c4f20432.bspapp.com, *.tslt.xyz, g.syshhc.top, c.jxjt888.top, www.laoguikeji.cn, qj.bpojie.com, b.tslt.xyz, m.xgjyouhui.com, www.freeheikeji.cn, xcx.xianbaow.com, *.smkj33.top, *.ddly666.top, hkj178.com, a.jxjt888.top, lysl2020.com, www.i3zh.com, iosoi.cn, jt.jxjt888.top, gjsx.vip, d.syshhc.top, gz.gongzijx.com, tvapp.guilaile.cn, www.benbenfx.xyz, 4thdimension.top, tan.ipnas.ltd
