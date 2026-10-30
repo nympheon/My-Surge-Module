@@ -1,0 +1,16 @@
+#!name=kelee-JDPrice
+#!desc=首次使用先打开慢慢买的“我的”页面获取所需参数，之后在京东商品详情页显示价格趋势。脚本由本仓库下载并缓存。
+#!author=wf021325、githubdulong、mw418；Surge 手工适配
+
+# 原始来源：https://kelee.one/Tool/Loon/Lpx/JD_Price.lpx
+# 脚本来源：bunizao/Mirrored，a8e1cbf97a2298a5f64412fcd1c6deb11d5de4f6
+# 兼容 Surge Mac / iPhone / iPad；JS 中保留原作者的慢慢买接口与计算流程。
+
+[Script]
+# 参数捕获只需要请求正文；正常请求在保存完成后继续发送。
+JDPrice-Capture = type=http-request, pattern=(?i)^https?://apapia-sqk-weblogic\.manmanbuy\.com/baoliao/center/menu$, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee-JDPrice/js/JD_Price.js, requires-body=true, timeout=10
+# 原脚本连续调用多个价格接口，单独为价格查询留出运行时间。
+JDPrice-Detail = type=http-response, pattern=(?i)^https?://in\.m\.jd\.com/product/graphext/\d+\.html, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee-JDPrice/js/JD_Price.js, requires-body=true, timeout=70
+
+[MITM]
+hostname = %APPEND% in.m.jd.com, apapia-sqk-weblogic.manmanbuy.com

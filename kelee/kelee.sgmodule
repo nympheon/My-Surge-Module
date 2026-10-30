@@ -1,0 +1,950 @@
+#!name=kelee
+#!desc=手工整合已选 52 项去广告及微信、QQ 外链功能，采用 Surge 原生拦截、Map Local 和 JQ；所需脚本和静态资源由本仓库下载并缓存。
+#!author=可莉及原插件作者；Surge 手工转换、优化与合并
+#!arguments=Tieba_FilterVideo:true,IThome_RemovePinned:false,IThome_RemoveBanners:false
+#!arguments-desc=Tieba_FilterVideo：是否过滤贴吧推荐视频帖；IThome_RemovePinned：是否移除 IT之家置顶文章；IThome_RemoveBanners：是否移除 IT之家全部横幅。均填写 true 或 false。
+
+# 来源：当前 54 项清单中除 HTTPDNS 拦截、京东比价之外的 52 项。
+# 核对镜像：bunizao/Mirrored，a8e1cbf97a2298a5f64412fcd1c6deb11d5de4f6。
+# 需要支持原生 JQ 正文重写的 Surge（iOS 5.14+ / Mac 5.9+）。
+# 原插件需要的 HTTPS 解密域名统一追加，不覆盖用户已有 MITM 列表。
+
+[Rule]
+# 广告平台拦截器：先保留原有例外，再处理广告与统计平台。
+DOMAIN-KEYWORD,adstrategy,REJECT
+AND,((DOMAIN-KEYWORD,tnc),(OR,((DOMAIN-SUFFIX,capcutapi.com),(DOMAIN-SUFFIX,zijieapi.com),(DOMAIN-SUFFIX,isnssdk.com),(DOMAIN-SUFFIX,toutiaoapi.com),(DOMAIN-SUFFIX,bytedance.com),(DOMAIN-SUFFIX,snssdk.com),(DOMAIN-SUFFIX,sgsnssdk.com)))),DIRECT
+AND,((DOMAIN-KEYWORD,-ad-),(DOMAIN-SUFFIX,byteimg.com)),REJECT
+AND,((DOMAIN-KEYWORD,ads),(DOMAIN-KEYWORD,-normal.zijieapi.com)),REJECT
+# 短信验证码、号码验证例外，必须位于 mob.com / jiguang.cn 拦截之前。
+DOMAIN,init.sms.mob.com,DIRECT
+DOMAIN,sdkapi.sms.mob.com,DIRECT
+DOMAIN,code.sms.mob.com,DIRECT
+DOMAIN,smartop-sdkapi.jiguang.cn,DIRECT
+DOMAIN,sdk.verification.jiguang.cn,DIRECT
+# 字节、快手及国内广告 SDK。
+DOMAIN,lf-ad-ies.bytecdn.cn,REJECT
+DOMAIN,dig.bdurl.net,REJECT
+DOMAIN,extlog.snssdk.com,REJECT
+DOMAIN,mcs.snssdk.com,REJECT
+DOMAIN-SUFFIX,bds.snssdk.com,REJECT
+DOMAIN-SUFFIX,byteadverts.com,REJECT
+DOMAIN-SUFFIX,ctobsnssdk.com,REJECT
+DOMAIN-SUFFIX,pangle.io,REJECT
+DOMAIN-KEYWORD,pangolin,REJECT
+DOMAIN-KEYWORD,pglstatp,REJECT
+DOMAIN-KEYWORD,panplayable-toutiao,REJECT
+DOMAIN-KEYWORD,-ad-sign.byteimg.com,REJECT
+DOMAIN-KEYWORD,-ad.byteoversea.com,REJECT
+DOMAIN-KEYWORD,asiad.byteactivity,REJECT
+DOMAIN-KEYWORD,iflyad.bj.openstorage.cn,REJECT
+DOMAIN-KEYWORD,bjimp.voiceads.cn,REJECT
+DOMAIN-SUFFIX,1rtb.net,REJECT
+DOMAIN-SUFFIX,1rtb.com,REJECT
+DOMAIN-SUFFIX,yfanads.com,REJECT
+DOMAIN-SUFFIX,halomobi.com,REJECT
+DOMAIN-SUFFIX,hubcloud.com.cn,REJECT
+DOMAIN-SUFFIX,inmobi.cn,REJECT
+DOMAIN-SUFFIX,uyunad.com,REJECT
+DOMAIN-SUFFIX,puata.info,REJECT
+DOMAIN,gdfp.gifshow.com,REJECT
+DOMAIN,open.e.kuaishou.com,REJECT
+DOMAIN,open.e.kuaishou.cn,REJECT
+DOMAIN,adtrack.e.kuaishou.com,REJECT
+DOMAIN-SUFFIX,partner.gifshow.com,REJECT
+DOMAIN-SUFFIX,adukwai.com,REJECT
+DOMAIN-SUFFIX,adkwai.com,REJECT
+DOMAIN-SUFFIX,supersonicads.com,REJECT
+DOMAIN-SUFFIX,appsad.cn,REJECT
+DOMAIN-SUFFIX,beizi.biz,REJECT
+DOMAIN-SUFFIX,ad-scope.com.cn,REJECT
+DOMAIN-SUFFIX,adn-plus.com.cn,REJECT
+DOMAIN-SUFFIX,adhub.com.cn,REJECT
+DOMAIN-SUFFIX,adnplus.com.cn,REJECT
+DOMAIN-SUFFIX,adscope.com.cn,REJECT
+DOMAIN-SUFFIX,adscope.cn,REJECT
+DOMAIN-SUFFIX,adscope.xyz,REJECT
+DOMAIN-SUFFIX,beizi.info,REJECT
+DOMAIN-SUFFIX,beizi.online,REJECT
+DOMAIN-SUFFIX,miaozhen.com,REJECT
+DOMAIN-SUFFIX,admobile.top,REJECT
+DOMAIN-SUFFIX,tianmu.mobi,REJECT
+DOMAIN-SUFFIX,admobile.mobi,REJECT
+DOMAIN-SUFFIX,admobile.net.cn,REJECT
+DOMAIN-SUFFIX,popadshop.com,REJECT
+DOMAIN-SUFFIX,admobile.vip,REJECT
+DOMAIN-SUFFIX,yksdks.com,REJECT
+DOMAIN-SUFFIX,dutils.com,REJECT
+DOMAIN-SUFFIX,mob.com,REJECT
+DOMAIN-SUFFIX,jiguang.cn,REJECT
+DOMAIN-SUFFIX,jpush.cn,REJECT
+DOMAIN-SUFFIX,jpush.io,REJECT
+# 百度广告、日志、推广。
+DOMAIN,afd.baidu.com,REJECT
+DOMAIN,als.baidu.com,REJECT
+DOMAIN,bgg.baidu.com,REJECT
+DOMAIN,cpro.baidustatic.com,REJECT
+DOMAIN,feed-image.baidu.com,REJECT
+DOMAIN,click-bes.baidu.com,REJECT
+DOMAIN,eclick.baidu.com,REJECT
+DOMAIN,mobads-logs.baidu.com,REJECT
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,nadvideo2.baidu.com,REJECT
+DOMAIN,wn.pos.baidu.com,REJECT
+DOMAIN,miniapp-ad.cdn.bcebos.com,REJECT
+DOMAIN,hm.baidu.com,REJECT
+DOMAIN,dlswbr.baidu.com,REJECT
+DOMAIN,miao.baidu.com,REJECT
+DOMAIN-SUFFIX,union.baidu.cn,REJECT
+DOMAIN-SUFFIX,union.baidu.com,REJECT
+# 腾讯广告和统计；gdtimg / ugdtimg 已由后缀覆盖。
+DOMAIN,tdid.m.qq.com,REJECT
+DOMAIN,ads.privacy.qq.com,REJECT
+DOMAIN,huatuocode.huatuo.qq.com,REJECT
+DOMAIN,info4.video.qq.com,REJECT
+DOMAIN,info6.video.qq.com,REJECT
+DOMAIN,ios.bugly.qq.com,REJECT
+DOMAIN,pro.bugly.qq.com,REJECT
+DOMAIN,ios.video.mpush.qq.com,REJECT
+DOMAIN,otheve.beacon.qq.com,REJECT
+DOMAIN,pgdt.gtimg.cn,REJECT
+DOMAIN,qzs.qq.com,REJECT
+DOMAIN,rmonitor.qq.com,REJECT
+DOMAIN,sdkconfig.video.qq.com,REJECT
+DOMAIN,tmead.y.qq.com,REJECT
+DOMAIN,tmeadbak.y.qq.com,REJECT
+DOMAIN,tmeadcomm.y.qq.com,REJECT
+DOMAIN,tpns.qq.com,REJECT
+DOMAIN,wup.imtt.qq.com,REJECT
+DOMAIN,tpstelemetry.tencent.com,REJECT
+DOMAIN,stat.y.qq.com,REJECT
+DOMAIN,stat6.y.qq.com,REJECT
+DOMAIN,oth.str.mdt.qq.com,REJECT
+DOMAIN,sdk.e.qq.com,REJECT
+DOMAIN,tangram.e.qq.com,REJECT
+DOMAIN-KEYWORD,trace.qq.com,REJECT
+DOMAIN-KEYWORD,trace.video.qq.com,REJECT
+DOMAIN-KEYWORD,ad.hunyuan.tencent.com,REJECT
+DOMAIN-SUFFIX,gdt.qq.com,REJECT
+DOMAIN-SUFFIX,l.qq.com,REJECT
+DOMAIN-SUFFIX,imtmp.net,REJECT
+DOMAIN-SUFFIX,gdtimg.com,REJECT
+DOMAIN-SUFFIX,ugdtimg.com,REJECT
+# OpenInstall、个推、友盟。
+DOMAIN-SUFFIX,opadlink.com,REJECT
+DOMAIN-SUFFIX,staevent.work,REJECT
+DOMAIN-SUFFIX,openinstall.online,REJECT
+DOMAIN-SUFFIX,statchannel.store,REJECT
+DOMAIN-SUFFIX,oplinking.com,REJECT
+DOMAIN-SUFFIX,deepinstall.com,REJECT
+DOMAIN-SUFFIX,openinstall.com,REJECT
+DOMAIN-SUFFIX,installtongji.top,REJECT
+DOMAIN-SUFFIX,openlink.cc,REJECT
+DOMAIN-SUFFIX,opstatistics.com,REJECT
+DOMAIN-SUFFIX,installtongji.online,REJECT
+DOMAIN-SUFFIX,statschannel.xyz,REJECT
+DOMAIN-SUFFIX,staevent.xyz,REJECT
+DOMAIN-SUFFIX,opstatistics.cn,REJECT
+DOMAIN-SUFFIX,openinstall.top,REJECT
+DOMAIN-SUFFIX,openinstall.io,REJECT
+DOMAIN-SUFFIX,statsinstall.xyz,REJECT
+DOMAIN-SUFFIX,statchannel.top,REJECT
+DOMAIN-SUFFIX,getui.com,REJECT
+DOMAIN-SUFFIX,getui.net,REJECT
+DOMAIN-SUFFIX,igexin.com,REJECT
+DOMAIN-SUFFIX,umtrack.com,REJECT
+DOMAIN-SUFFIX,umeng.com,REJECT
+DOMAIN-SUFFIX,umsns.com,REJECT
+DOMAIN-SUFFIX,lydass.net,REJECT
+DOMAIN-SUFFIX,lydass.com.cn,REJECT
+DOMAIN-SUFFIX,lydaas.net,REJECT
+DOMAIN-SUFFIX,lydass.cn,REJECT
+DOMAIN-SUFFIX,lydaas.cn,REJECT
+DOMAIN-SUFFIX,lydaas.com.cn,REJECT
+DOMAIN-SUFFIX,fwosapp.com,REJECT
+DOMAIN-SUFFIX,rhinokeen.com,REJECT
+DOMAIN-SUFFIX,lydaas.com,REJECT
+DOMAIN-SUFFIX,xixikf.com,REJECT
+DOMAIN-SUFFIX,wrating.com,REJECT
+DOMAIN-SUFFIX,mobmore.com,REJECT
+DOMAIN-SUFFIX,um0.cn,REJECT
+DOMAIN-SUFFIX,umv0.com,REJECT
+DOMAIN-SUFFIX,umtrack1.com,REJECT
+DOMAIN-SUFFIX,eshiqi.com,REJECT
+DOMAIN-SUFFIX,umv5.com,REJECT
+DOMAIN-SUFFIX,dratio.com,REJECT
+DOMAIN-SUFFIX,umtrack0.com,REJECT
+DOMAIN-SUFFIX,whalecloud.com,REJECT
+DOMAIN-SUFFIX,umtrack2.com,REJECT
+DOMAIN-SUFFIX,umengcloud.com,REJECT
+DOMAIN-SUFFIX,um1.cn,REJECT
+DOMAIN-SUFFIX,adfunlink.com,REJECT
+DOMAIN-SUFFIX,ubixioe.com,REJECT
+# 阿里、百度超级汇川、网易、小米、美团、京东。
+DOMAIN,ossgw.alicdn.com,REJECT
+DOMAIN,ems.youku.com,REJECT
+DOMAIN,hudong.alicdn.com,REJECT
+DOMAIN,et.tanx.com,REJECT
+DOMAIN,df.tanx.com,REJECT
+DOMAIN,opehs.tanx.com,REJECT
+DOMAIN,beacon-api.aliyuncs.com,REJECT
+DOMAIN,adash.man.aliyuncs.com,REJECT
+DOMAIN,adashx.m.taobao.com,REJECT
+DOMAIN,applog.uc.cn,REJECT
+DOMAIN,atoken.m.taobao.com,REJECT
+AND,((DOMAIN-KEYWORD,adash),(DOMAIN-SUFFIX,ut.taobao.com)),REJECT
+DOMAIN,baichuan-sdk.alicdn.com,REJECT
+DOMAIN,acs4baichuan.m.taobao.com,REJECT
+DOMAIN,nbsdk-baichuan.alicdn.com,REJECT
+DOMAIN,api.sm.cn,REJECT
+DOMAIN,c.sm.cn,REJECT
+DOMAIN,content-understand-strategy.sm.cn,REJECT
+DOMAIN,hc-ssp.sm.cn,REJECT
+DOMAIN,sdk-log.partner.sm.cn,REJECT
+DOMAIN,partner.uc.cn,REJECT
+DOMAIN,cpc-service-square.aiclk.com,REJECT
+DOMAIN,logrcv.aiclk.com,REJECT
+DOMAIN,acjs.aliyun.com,REJECT
+DOMAIN,retcode.alicdn.com,REJECT
+DOMAIN,arms-retcode.aliyuncs.com,REJECT
+DOMAIN-SUFFIX,iytcdn.com,REJECT
+DOMAIN,huichuan.sm.cn,REJECT
+DOMAIN,huichuan-mc.sm.cn,REJECT
+DOMAIN,nex.163.com,REJECT
+DOMAIN,iad.g.163.com,REJECT
+DOMAIN,gorgon.youdao.com,REJECT
+DOMAIN-SUFFIX,ad.xiaomi.com,REJECT
+DOMAIN,al-log.d.meituan.net,REJECT
+DOMAIN,babel-statistics-android.d.meituan.net,REJECT
+DOMAIN,maplocatesdksnapshot.d.meituan.net,REJECT
+DOMAIN,metrics-picture.d.meituan.net,REJECT
+DOMAIN,route-stats.d.meituan.net,REJECT
+DOMAIN,dsp-x.jd.com,REJECT
+DOMAIN,im-x.jd.com,REJECT
+DOMAIN,xlog.jd.com,REJECT
+DOMAIN,janapi.jd.com,REJECT
+# 其他广告与归因平台，保留原插件的域名粒度。
+DOMAIN-SUFFIX,toponadss.com,REJECT
+DOMAIN-SUFFIX,toponad.com,REJECT
+DOMAIN-SUFFIX,motowoo.com,REJECT
+DOMAIN,guide2.bianxianmao.com,REJECT
+DOMAIN,sdk.zhangyuyidong.cn,REJECT
+DOMAIN,sdklog.zhangyuyidong.cn,REJECT
+DOMAIN-SUFFIX,adintl.cn,REJECT
+DOMAIN-SUFFIX,adtaipo.com,REJECT
+DOMAIN-SUFFIX,adx.yixin.im,REJECT
+DOMAIN-SUFFIX,kuaiyiad.com,REJECT
+DOMAIN-SUFFIX,adtianmai.com,REJECT
+DOMAIN-SUFFIX,readgps.com,REJECT
+DOMAIN-SUFFIX,fanglinad.com,REJECT
+DOMAIN-SUFFIX,17admob.com,REJECT
+DOMAIN-SUFFIX,slyxmobi.com,REJECT
+DOMAIN-SUFFIX,mobrtb.com,REJECT
+DOMAIN-SUFFIX,maplehaze.cn,REJECT
+DOMAIN-SUFFIX,lnk0.com,REJECT
+DOMAIN-SUFFIX,bridgeoos.com,REJECT
+DOMAIN-SUFFIX,anythinktech.com,REJECT
+DOMAIN-SUFFIX,birdgesdk.com,REJECT
+DOMAIN-SUFFIX,anyrtb.com,REJECT
+DOMAIN-SUFFIX,combocn.com,REJECT
+DOMAIN-SUFFIX,beanxin.com,REJECT
+DOMAIN-SUFFIX,letway.cn,REJECT
+DOMAIN-SUFFIX,newitai.com,REJECT
+DOMAIN-SUFFIX,fireluck.cn,REJECT
+DOMAIN-SUFFIX,setway.cn,REJECT
+DOMAIN-SUFFIX,artcto.com,REJECT
+DOMAIN-SUFFIX,wayio.cn,REJECT
+DOMAIN-SUFFIX,iaddata.com,REJECT
+DOMAIN,ad-evods.tianya.tv,REJECT
+DOMAIN-SUFFIX,tuia.cn,REJECT
+DOMAIN-SUFFIX,66mobi.com,REJECT
+DOMAIN-SUFFIX,xdplt.com,REJECT
+DOMAIN,ads.cup.com.cn,REJECT
+DOMAIN-SUFFIX,adjust.com,REJECT
+DOMAIN-SUFFIX,adjust.io,REJECT
+DOMAIN-SUFFIX,adjust.net.in,REJECT
+DOMAIN,app-analytics-services.com,REJECT
+DOMAIN,odm.app-ads-services.com,REJECT
+DOMAIN,firebaselogging-pa.googleapis.com,REJECT
+DOMAIN,firebaseinappmessaging.googleapis.com,REJECT
+DOMAIN,fundingchoicesmessages.google.com,REJECT
+DOMAIN-SUFFIX,doubleclick.net,REJECT
+DOMAIN-SUFFIX,doubleclick-cn.net,REJECT
+DOMAIN-SUFFIX,googlesyndication.com,REJECT
+DOMAIN-SUFFIX,googlesyndication-cn.com,REJECT
+DOMAIN-SUFFIX,xinduoad.com,REJECT
+DOMAIN,statis.miwuad.com,REJECT
+DOMAIN-SUFFIX,sigmob.cn,REJECT
+DOMAIN-SUFFIX,richmob.cn,REJECT
+DOMAIN,ad.shunchangzhixing.com,REJECT
+DOMAIN,redirect.shunchangzhixing.com,REJECT
+DOMAIN-SUFFIX,api.touch-moblie.com,REJECT
+DOMAIN,mercury-gateway.ixiaochuan.cn,REJECT
+DOMAIN,adapi.izuiyou.com,REJECT
+DOMAIN-SUFFIX,domob.cn,REJECT
+DOMAIN-SUFFIX,adwangmai.com,REJECT
+DOMAIN-SUFFIX,bxsnews.com,REJECT
+DOMAIN-SUFFIX,ranfenghd.com,REJECT
+DOMAIN-SUFFIX,qchannel01.cn,REJECT
+DOMAIN-SUFFIX,ad.xelements.cn,REJECT
+DOMAIN-SUFFIX,adsrvr.cn,REJECT
+DOMAIN-SUFFIX,adsrvr.org,REJECT
+DOMAIN-SUFFIX,fancydsp.com,REJECT
+DOMAIN-SUFFIX,xcultur.com,REJECT
+DOMAIN-SUFFIX,bayescom.com,REJECT
+DOMAIN-SUFFIX,etoolads.cn,REJECT
+DOMAIN,ad.aggrxinc.com,REJECT
+DOMAIN-SUFFIX,mentamob.com,REJECT
+DOMAIN-SUFFIX,advlion.com,REJECT
+DOMAIN-SUFFIX,shanghailingye.cn,REJECT
+DOMAIN-SUFFIX,shenshiads.com,REJECT
+DOMAIN-SUFFIX,adshenshi.com,REJECT
+DOMAIN-SUFFIX,qidianad.com,REJECT
+DOMAIN-SUFFIX,kuaichuanad.com,REJECT
+DOMAIN-SUFFIX,statisticslinks.com,REJECT
+DOMAIN,adx.zuoyebang.com,REJECT
+DOMAIN-SUFFIX,cxwlad.com,REJECT
+DOMAIN-SUFFIX,ad.gameley.com,REJECT
+DOMAIN-SUFFIX,yiweiads.com,REJECT
+DOMAIN-SUFFIX,adx.52qumao.com,REJECT
+DOMAIN-SUFFIX,hzjizhun.cn,REJECT
+DOMAIN-SUFFIX,hzjizhun.com,REJECT
+DOMAIN-SUFFIX,sogaha.cn,REJECT
+DOMAIN,zxid-m.mobileservice.cn,REJECT
+DOMAIN,xadsmartget.adgain.cn,REJECT
+DOMAIN-SUFFIX,tradplusad.com,REJECT
+DOMAIN-SUFFIX,fancyapi.com,REJECT
+DOMAIN-SUFFIX,medproad.com,REJECT
+DOMAIN-SUFFIX,applovin.com,REJECT
+DOMAIN-SUFFIX,iads.unity3d.com,REJECT
+DOMAIN-SUFFIX,unityads.unity3d.com,REJECT
+DOMAIN-SUFFIX,unityads.unitychina.cn,REJECT
+DOMAIN-SUFFIX,tapjoy.com,REJECT
+DOMAIN-SUFFIX,vungle.com,REJECT
+DOMAIN-SUFFIX,adsmoloco.com,REJECT
+DOMAIN-SUFFIX,smadex.com,REJECT
+DOMAIN-SUFFIX,tapad.com,REJECT
+DOMAIN-SUFFIX,adsappier.com,REJECT
+DOMAIN-SUFFIX,inmobi.com,REJECT
+DOMAIN-SUFFIX,inmobicdn.net,REJECT
+DOMAIN-SUFFIX,appsflyersdk.com,REJECT
+DOMAIN-SUFFIX,applvn.com,REJECT
+DOMAIN-SUFFIX,moloco.com,REJECT
+DOMAIN-SUFFIX,rayjump.com,REJECT
+DOMAIN-SUFFIX,rixengine.com,REJECT
+DOMAIN-SUFFIX,amazon-adsystem.com,REJECT
+DOMAIN-SUFFIX,skarb.club,REJECT
+DOMAIN-SUFFIX,skarb.work,REJECT
+DOMAIN-SUFFIX,amplitude.com,REJECT
+DOMAIN-SUFFIX,fivecdm.com,REJECT
+DOMAIN-SUFFIX,doubleverify.com,REJECT
+DOMAIN-SUFFIX,tobidad.cn,REJECT
+DOMAIN-SUFFIX,tobidad.com,REJECT
+DOMAIN,ep7.facebook.com,REJECT
+
+# 航旅纵横、贴吧、e充电、360 摄像机、彩云天气。
+URL-REGEX,^https?://(?:discardrp|startup)\.umetrip\.com/gateway/api/umetrip/native,REJECT
+DOMAIN,180.76.76.200,REJECT
+DOMAIN,adash-evone.echargenet.com,REJECT
+DOMAIN,ad.jia.360.cn,REJECT
+DOMAIN,ad.iot.360.cn,REJECT
+DOMAIN,abyss.cyapi.cn,REJECT
+DOMAIN,ad.cyapi.cn,REJECT
+DOMAIN,gather.colorfulclouds.net,REJECT
+# 番茄小说：原域名粒度的开屏、推荐、直播与日志接口。
+DOMAIN,zlink.ugsdk.cn,REJECT
+DOMAIN,mon.toutiaocloud.net,REJECT
+DOMAIN,lf-normal-gr-sourcecdn.bytegecko.com,REJECT
+DOMAIN,lf-webcast-gr-sourcecdn.bytegecko.com,REJECT
+DOMAIN,p3-developer.bytemaimg.com,REJECT
+DOMAIN,webcast-open.douyin.com,REJECT
+DOMAIN,p11-webcast-sign.douyinpic.com,REJECT
+DOMAIN,p3-webcast-sign.douyinpic.com,REJECT
+DOMAIN,log3-applog.fqnovel.com,REJECT
+DOMAIN,log5-applog.fqnovel.com,REJECT
+DOMAIN,mon11-misc-lq.fqnovel.com,REJECT
+DOMAIN,mon11-misc.fqnovel.com,REJECT
+DOMAIN,mon3-misc.fqnovel.com,REJECT
+DOMAIN,rtlog3-applog.fqnovel.com,REJECT
+DOMAIN,rtlog5-applog.fqnovel.com,REJECT
+DOMAIN,effect.snssdk.com,REJECT
+DOMAIN,i.snssdk.com,REJECT
+DOMAIN,is-lq.snssdk.com,REJECT
+DOMAIN,is.snssdk.com,REJECT
+DOMAIN,security.snssdk.com,REJECT
+DOMAIN,vas.snssdk.com,REJECT
+DOMAIN,mon.toutiaocloud.com,REJECT
+DOMAIN,abtest3-misc.zijieapi.com,REJECT
+DOMAIN,ads3-normal.zijieapi.com,REJECT
+DOMAIN,ads5-normal.zijieapi.com,REJECT
+DOMAIN,feedback-c.zijieapi.com,REJECT
+DOMAIN,gecko3.zijieapi.com,REJECT
+DOMAIN,gecko5.zijieapi.com,REJECT
+DOMAIN,ma.zijieapi.com,REJECT
+DOMAIN,minigame3-normal.zijieapi.com,REJECT
+DOMAIN,minigame5-normal.zijieapi.com,REJECT
+DOMAIN,mssdk.zijieapi.com,REJECT
+DOMAIN,timon.zijieapi.com,REJECT
+DOMAIN,vcs.zijieapi.com,REJECT
+# 京东诊断与拼多多调度、QUIC、日志。
+URL-REGEX,^http://\w{32}\.jddebug\.com/diagnose\?,REJECT
+AND,((URL-REGEX,^http://((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/d(\d)?),(USER-AGENT,*com.xunmeng.pinduoduo*)),REJECT
+AND,((URL-REGEX,^http://\[[0-9a-fA-F:]+\]/d(\d)?\?),(USER-AGENT,*com.xunmeng.pinduoduo*)),REJECT
+AND,((DOMAIN,api.pinduoduo.com),(PROTOCOL,QUIC)),REJECT
+DOMAIN,titan.pinduoduo.com,REJECT
+DOMAIN,xg.pinduoduo.com,REJECT
+DOMAIN,cdl-1.pddpic.com,REJECT
+DOMAIN,cdl-p2.pddpic.com,REJECT
+DOMAIN,cd-1.pddpic.com,REJECT
+DOMAIN,apm.pinduoduo.com,REJECT
+DOMAIN,th-b.pinduoduo.com,REJECT
+DOMAIN,ta.pinduoduo.com,REJECT
+DOMAIN,th.pinduoduo.com,REJECT
+DOMAIN,th-a.pinduoduo.com,REJECT
+DOMAIN,ta-a.pinduoduo.com,REJECT
+DOMAIN,meta.pinduoduo.com,REJECT
+DOMAIN,apm-a.pinduoduo.com,REJECT
+# Jump；其中 ad.gameley.com / admobile.top 已在通用广告后缀规则中覆盖。
+DOMAIN,zlsdk.1rtb.net,REJECT
+DOMAIN,toblog.ctobsnssdk.com,REJECT
+DOMAIN,s3plus.meituan.net,REJECT
+DOMAIN,images.pinduoduo.com,REJECT
+DOMAIN,qh-material.taobao.com,REJECT
+# 微信公众号、YY、小红书、斗鱼。
+DOMAIN-SUFFIX,wxs.qq.com,REJECT
+DOMAIN,splash.yy.com,REJECT
+DOMAIN,dsp-ad.yy.com,REJECT
+DOMAIN,ysad.yy.com,REJECT
+AND,((PROTOCOL,QUIC),(DOMAIN-SUFFIX,xiaohongshu.com)),REJECT
+URL-REGEX,^http://linkmicschedule\.douyucdn\.cn/im_schedule/im_gate_list,REJECT
+AND,((DEST-PORT,18000),(PROTOCOL,STUN)),REJECT
+DOMAIN,stun1.douyucdn.cn,REJECT
+DOMAIN,stun1.qvb.qcloud.com,REJECT
+# 滴滴、Keep、12306（保留 ad.12306.cn 的直连例外）。
+DOMAIN,gwp.xiaojukeji.com,REJECT
+DOMAIN,gwpgz.diditaxi.com.cn,REJECT
+DOMAIN,adtrack.xiaojukeji.com,REJECT
+DOMAIN,kad.gotokeep.com,REJECT
+DOMAIN,ad.12306.cn,DIRECT
+# 微信小程序，wxs.qq.com 下的两个域名已由上方后缀覆盖。
+DOMAIN,wxsmsdy.video.qq.com,REJECT
+DOMAIN,ads-shopping.shouqianba.com,REJECT
+DOMAIN,ad.maoyan.com,REJECT
+DOMAIN,e.jparking.cn,REJECT
+# 淘宝、QQ 音乐。
+DOMAIN,h-adashx.ut.taobao.com,REJECT
+DOMAIN,ut.taobao.com,REJECT
+DOMAIN,adstats.tencentmusic.com,REJECT
+DOMAIN,ad.tencentmusic.com,REJECT
+DOMAIN,adcdn.tencentmusic.com,REJECT
+DOMAIN,adcdn6.tencentmusic.com,REJECT
+DOMAIN,adexpo.tencentmusic.com,REJECT
+DOMAIN,adclick.tencentmusic.com,REJECT
+DOMAIN,mc.tencentmusic.com,REJECT
+DOMAIN,monitor.music.qq.com,REJECT
+DOMAIN,tmeadquic.y.qq.com,REJECT
+# 可莉广告过滤器中的补充规则。
+DOMAIN,acdn.adnxs.com,REJECT
+DOMAIN,mediation.adnxs.com,REJECT
+DOMAIN,sin3-ib.adnxs.com,REJECT
+DOMAIN,sdkconfig.ad.xiaomi.com,REJECT
+DOMAIN,data.mistat.xiaomi.com,REJECT
+DOMAIN,tracking.intl.miui.com,REJECT
+DOMAIN,business.msstatic.com,REJECT
+DOMAIN-SUFFIX,v1d.szbdyd.com,REJECT
+URL-REGEX,^http://cdn\.wup\.huya\.com/launch/queryHttpDns$,REJECT
+DOMAIN-SUFFIX,m1.ad.10010.com,REJECT
+DOMAIN,ad.21cn.com,REJECT
+DOMAIN,ad.k.21cn.com,REJECT
+DOMAIN,admarket.21cn.com,REJECT
+DOMAIN,adshows.21cn.com,REJECT
+URL-REGEX,^http://p\.kuaidi100\.com/(?:mobile/mobileapi\.do|advertisement/),REJECT-TINYGIF
+DOMAIN,mall-dsp2.qinlinkeji.com,REJECT
+DOMAIN,mallapi2.qinlinkeji.com,REJECT
+DOMAIN,open-pixon.ads-pixiv.net,REJECT
+# 不触发解析的精确 IP 规则统一放在域名和 URL 规则之后。
+IP-CIDR,47.110.187.87/32,REJECT,no-resolve
+IP-CIDR,180.76.76.200/32,REJECT,no-resolve
+IP-CIDR,122.229.8.47/32,REJECT,no-resolve
+IP-CIDR,122.229.29.89/32,REJECT,no-resolve
+
+[Body Rewrite]
+# 天气通：仅保留天气、雷达和我的标签。
+http-response-jq (?i)^https://tqt\.weibo\.cn/master/nav/tab\? 'map(.tabs |= map(select(.type == "weather" or .type == "radar" or .type == "my")))'
+# 淘票票：主页横幅、搜索推荐、顶部样式及递归广告节点。
+http-response-jq (?i)^https://acs\.m\.taobao\.com/gw/mtop\.film\.mtopintegrationapi\.homeconfig/ 'del(.data.returnValue.floatingBanner, .data.returnValue.searchShadeList)'
+http-response-jq (?i)^https://acs\.m\.taobao\.com/gw/mtop\.film\.mtopintegrationapi\.homeconfig/ '.data.returnValue.topTab |= map(select(.activeImage | not) | del(.backgroundColor))'
+http-response-jq (?i)^https://acs\.m\.taobao\.com/gw/mtop\.film\.life\.aristotle\.get/ 'def filter_nodes: map(if .data.componentId? and (.data.componentId | type == "string") and (.data.componentId | (contains("tpp_banner") or . == "tpp_guess_like")) then empty else .nodes |= (if . then filter_nodes else . end) end); .data.nodes |= (if . then filter_nodes else . end)'
+# 华住会（HantingHotels）：保留酒店服务入口。
+http-response-jq (?i)^https://res-pub\.huazhu\.com/frontconf/homeconfig_45/\w+\.json$ 'if has("content") and (.content | type) == "object" then .content |= with_entries(select(.key == "topBanner" or .key == "topBannerImages")) else . end'
+http-response-jq (?i)^https://res-pub\.huazhu\.com/frontconf/tabbarconfig_45/\w+\.json$ '.content.tabbar |= map(select(.attributes.tabName == "首页" or .attributes.tabName == "服务" or .attributes.tabName == "我的"))'
+# 大麦：同一接口的字段删除合并执行，避免多次解析正文。
+http-response-jq (?i)^https://acs\.m\.taobao\.com/gw/mtop\.damai\.wireless\.user\.my\.content\.get/ 'del(.data.banner, .data.performFilmVip.userProfitList)'
+http-response-jq (?i)^https://acs\.m\.taobao\.com/gw/mtop\.damai\.wireless\.mypage\.feed/ 'del(.data.feedCard)'
+http-response-jq (?i)^https://acs\.m\.taobao\.com/gw/mtop\.damai\.mec\.aristotle\.get/ 'del(.data.data.top.keywords)'
+# 乐播投屏：原 JS 只把第二个底栏标签置空，改用原生 JQ。
+http-response-jq (?i)^https://saas\.hpplay\.cn/api/lebo-desk/endpoint/app-resource/app_tab_red_dot\?(?:[^#?&]+&)*user-tag=1$ 'if (.data | type) == "array" and (.data | length) > 1 then .data[1] = {} else . end'
+# 哔哩哔哩漫画：保留原脚本对“新人/新作/商城”和我的页面的筛选条件。
+http-response-jq (?i)^https://manga\.bilibili\.com/twirp/comic\.v\d\.Comic/GetClassPageAllTabs 'if (.data.home_type | type) == "array" then .data.home_type |= map(select(.name != "新人" and .name != "新作")) else . end | if (.data.home_feed | type) == "array" then .data.home_feed |= map(select(.name != "商城")) else . end'
+http-response-jq (?i)^https://manga\.bilibili\.com/twirp/user\.v\d\.User/UCenterConf 'if (.data.confs | type) == "array" then .data.confs |= map(select(.title != "漫画商城" and .title != "超漫俱乐部" and .title != "看漫免流量")) else . end'
+# 百度网盘：金刚区入口筛选。
+http-response-jq (?i)^https://pan\.baidu\.com/feed/kingkongdistrict\? '.data.data |= map(select(.type != "novel" and .type != "shortplay" and .type != "print" and .type != "job_hunt"))'
+# 百度贴吧：把原来重复的逐字段删除合并为一次解析。
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/s/sync$ 'del(.activity_switch, .video_report_config, .advertisement_config, .next_start, .push_strategy_new, .live_activity_guide, .h5_pop_ups, .duxiaoman_url, .is_need_remind_live_rooms, .floating_icon, .ad_stlog_switch, .first_time_motivate, .windowStrategyList, .ad_adsense, .ad_config, .videoup_guide_pop, .ad_origin_config_switch, .needNewUserLead, .h5_pop_ups_config, .alaTabColor, .search_guide, .ad_sdk_priority, .low_version_pop_config, .ad_num_competition_frs, .live_new_user_guide_day, .screen_fill_data_result, .yy_live_tab, .ad_num_competition_personalize, .complete_apk_url, .user_activity, .homepage_guide, .bottom_bubble_config, .home_screen_ad, .afSearch_tab, .recent_client_info, .video_activity, .namoaixud_url, .yy_live_config, .user_growth_task_list, .cloud_control_data_info, .wl_config.pb_banner_funad_cache_strategy, .wl_config.pb_comment_asyncafd_cache_strategy, .wl_config.download_edge_float, .wl_config.download_pause_retain_dialog_conf, .wl_config.download_mobile_dialog_conf, .wl_config.download_fake_progress_config_a, .wl_config.download_fake_progress_config_b, .scheme_whitelist)'
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/s/sync$ 'if (.wl_config | type) == "object" then .wl_config |= with_entries(if (.key | IN("home_ad_num", "frs_ad_num", "pb_comment_ad_num", "index_bear_density", "frs_bear_density")) then .value = 0 elif (.key | IN("index_bear_first_floor_max", "index_bear_first_floor_min")) then .value = 999999999 else . end) else . end'
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/s/sync$ '.index_tab_info |= map(select(.tab_name == "推荐")) | .top_level_navi |= {"推荐": .["推荐"], "侧边栏": .["侧边栏"], "关注": .["关注"]}'
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/u/user/profile$ 'del(.url_map, .user_agent_info, .bubble_info, .duxiaoman_entry, .uc_card, .finance_tab, .vip_banner, .ala_live_info, .recom_naws_list, .duxiaoman, .user.consume_info, .namoaixud_entry) | if (.user.shake_ad_switch | type) == "object" and (.user.shake_ad_switch | has("is_show")) then .user.shake_ad_switch.is_show = 0 else . end'
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/u/user/profile$ '.custom_grid |= map(select(.title != "游戏大厅" and .title != "预约管理" and .title != "领话费" and .title != "短故事")) | .zone_info |= map(.common_func |= (if .common_func_noraml then .common_func_noraml |= map(select(.name != "创建智能体")) else . end)) | .zone_info |= map(select(.type != "commerce" and .type != "banner" and .type != "game"))'
+http-response-jq (?i)^https?://tieba\.baidu\.com/c/f/forum/forumGuide$ 'del(.hot_search)'
+http-response-jq (?i)^https?://tieba\.baidu\.com/c/f/frs/frsBottom\? 'del(.card_activity)'
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/f/frs/frsBottom$ 'del(.card_activity)'
+http-response-jq (?i)^https?://tiebac\.baidu\.com/c/f/sidebar/home$ 'del(.game_center, .tools, .task_list, .vip_banner)'
+# 360 摄像机。
+http-response-jq (?i)^https://jia\.360\.cn/conf/v1\.json 'del(.tab_conf, .ad_conf, .activity)'
+# 盒马：按原 pageType、sceneType 和 bizCode 保留购物功能。
+http-response-jq (?i)^https://acs-m\.freshippo\.com/gw/mtop\.wdk\.render\.queryindexpage/ 'if .data.pageType == "1" then .data.scenes |= map(select(.bizCode == "three_row_circle")) else . end'
+http-response-jq (?i)^https://acs-m\.freshippo\.com/gw/mtop\.wdk\.render\.querytabfeedstream/ 'if .data.pageType == "5" then .data.scenes |= map(select(.sceneType == "100028")) else . end'
+http-response-jq (?i)^https://acs-m\.freshippo\.com/gw/(mtop\.wdk\.render\.querychannelpage|mtop\.wdk\.render\.querysinglepage)/ 'if .data.pageType == "216" then .data.scenes |= map(select(.bizCode == "shop_walk_top_picture" or .bizCode == "shop_walk_shop_util" or .bizCode == "shop_walk_bistro")) else . end'
+http-response-jq (?i)^https://acs-m\.freshippo\.com/gw/mtop\.wdk\.render\.querymypage/ '.data.scenes |= map(select(.sceneType | IN("400029", "400005", "400010", "400002", "400004", "400015")))'
+http-response-jq (?i)^https://acs-m\.freshippo\.com/gw/(mtop\.wdk\.lbs\.location\.shopdecideapi\.decideformain|mtop\.wdk\.lbs\.location\.shopdecideapi\.decidebygeocode)/ '.data.groupList |= map(.ext.tabConfig |= (.normalTabList = (.normalTabList | map(select(.code as $c | ["HOME", "CLASSIFY", "CART", "MY"] | any(. == $c)))) | .normalTabListB = (.normalTabListB | map(select(.code as $c | ["HOME", "CLASSIFY", "CART", "MY"] | any(. == $c))))))'
+# 科沃斯。
+http-response-jq (?i)^https://gl-cn-api\.ecovacs\.cn/v3/private/ '.data.navigateInfoResponseList |= map(select(.positionType == "Robot" or .positionType == "Mine"))'
+# 京东外卖。
+http-response-jq (?i)^https://color\.jddj\.com/client\.action\?(?:[^#?&]+&)*functionId=hours_home$ 'del(.result.config.searchFloor.data[].searchWords) | .result.data |= map(if .tnConfigVO?.businessCode == "nearby_HourlyGo_Operation_Tags" then empty else . end)'
+http-response-jq (?i)^https://color\.jddj\.com/client\.action\?(?:[^#?&]+&)*functionId=wmHome$ '(.floors |= map(del(.data.tnData.newsInfo?))) | .floors |= map(select(.mId != "newWalletIdFloor" and .mId != "recommendfloor")) | .floors |= map(.data |= (if .tnData? then del(.tnData.cardList, .tnData.cardListStatic, .tnData.walletList) else . end))'
+http-response-jq (?i)^https://api\.m\.jd\.com/client\.action$ 'del(.data.searchDTO.searchWords, .data.wishlistDTO.bubbleTip)'
+http-response-jq (?i)^https://api\.m\.jd\.com/client\.action$ '.data.tabList |= (map(select(.code == "recommendation" or .code == "find_food")) | map(if .code == "recommendation" then .dpHomeFeedTabResultDTOList = .dpHomeFeedTabResultDTOList[0:2] else . end | .dpHomeBannerResultDTOList = []))'
+# 京东：仅修改已有配置项，合并 socketmonitor 两个设置。
+http-response-jq (?i)^https://api\.m\.jd\.com/client\.action\?(?:[^#?&]+&)*functionId=basicConfig 'if (.data.JDMessage.socketmonitor | type) == "object" then .data.JDMessage.socketmonitor |= with_entries(if (.key == "isSocketEstablishedAhead" or .key == "isSocketReport") then .value = 0 else . end) else . end | if (.data.JDHttpToolKit.httpdns | type) == "object" and (.data.JDHttpToolKit.httpdns | has("httpdns")) then .data.JDHttpToolKit.httpdns.httpdns = 0 else . end'
+# 起点读书：保持 Items 字段原有的字符串类型。
+http-response-jq (?i)^https://magev6\.if\.qidian\.com/argus/api/v1/client/getconf$ 'if (.Data | type) == "object" and (.Data | has("WolfEye")) then .Data.WolfEye = 0 else . end | if (.Data.CloudSetting | type) == "object" and (.Data.CloudSetting | has("TeenShowFreq")) then .Data.CloudSetting.TeenShowFreq = 0 else . end | del(.Data.ActivityPageBackPushNoticeFrequency, .Data.ActivityIcon, .Data.ActivityPopup, .Data.LuckBag)'
+http-response-jq (?i)^https://magev6\.if\.qidian\.com/argus/api/v2/dailyrecommend/getdailyrecommend\? 'if (.Data | type) == "object" and (.Data | has("Items")) then .Data.Items = "[]" else . end'
+http-response-jq (?i)^https://magev6\.if\.qidian\.com/argus/api/v3/user/getaccountpage\? 'del(.Data.BenefitButtonList)'
+
+# 拼多多：主页、个人页、商品详情与订单推荐。
+http-response-jq (?i)^https://api\.pinduoduo\.com/api/alexa/homepage/hub\? 'del(.result.dy_module.irregular_banner_dy, .result.icon_set, .result.search_bar_hot_query)'
+http-response-jq (?i)^https://api\.pinduoduo\.com/api/alexa/homepage/hub\? '.result.bottom_tabs? |= map(select(.link | IN("index.html", "chat_list.html", "personal.html"))) | .result.buffer_bottom_tabs? |= map(select(.link | IN("index.html", "chat_list.html", "personal.html"))) | .result.all_top_opts |= map(del(.selected_image, .image, .height, .width))'
+http-response-jq (?i)^https://api\.pinduoduo\.com/search\? 'del(.expansion)'
+http-response-jq (?i)^https://api\.pinduoduo\.com/api/philo/personal/hub\? 'del(.monthly_card_entrance, .personal_center_style_v2_vo, .icon_set.icons, .icon_set.top_personal_icons, .personal_banner)'
+http-response-jq (?i)^https://api\.pinduoduo\.com/api/oak/integration/render\? 'del(.bottom_section_list, .ui.bottom_section, .ui.live_section.float_info)'
+http-response-jq (?i)^https://api\.pinduoduo\.com/api/caterham/v3/query/order_detail_group\? 'del(.data.goods_list)'
+http-response-jq (?i)^https://api\.pinduoduo\.com/order/ 'del(.marketing_banner_vo, .shipping.banner_above_recommend)'
+http-response-jq (?i)^https://api\.pinduoduo\.com/api/aristotle/order_list_v4\? '.orders |= map(.order_buttons |= map(del(.order_growth_tip)))'
+# 薄荷健康：主页、广场及代谢配置。
+http-response-jq (?i)^https://api\.boohee\.com/meta-interface/v2/index\? 'del(.data.recom_cards, .data.recom_btns)'
+http-response-jq (?i)^https://api\.boohee\.com/meta-interface/v1/index/plaza\? 'del(.data.tabs[1].badge, .data.recommend_ads)'
+http-response-jq (?i)^https://api\.boohee\.com/open-interface/v1/string/market_page\?(?:[^#?&]+&)*title=metabolism_config$ 'del(.top_banner, .diagnos_config, .partner_hospital, .question_answer, .product, .brand_story)'
+http-response-jq (?i)^https://api\.boohee\.com/meta-interface/v1/index/plaza-flow\? 'if (.data.contents | type) == "array" then .data.contents |= map(select(.type != 4)) else . end'
+# YY。
+http-response-jq (?i)^https://yyapp-idx\.yy\.com/mobyy/nav/index/idx\? '.data[].modules |= map(select(.name != "新版本滚动条" and .name != "通栏轮播" and .name != "新静默位"))'
+http-response-jq (?i)^https://tab\.yy\.com/tabs\? 'del(.data.tabsForSelect)'
+http-response-jq (?i)^https://tab\.yy\.com/tabs\? '.data.tabs |= map(select(.alias == "follow" or .alias == "im" or .alias == "me"))'
+http-response-jq (?i)^https://personal-center\.yy\.com/personalCenter/list\? '.data.modules |= map(select(.moduleName != "Banner轮播") | if has("entrances") then .entrances |= map(select(.bizCode | IN("jishijiedaikuan", "duxiaoman2", "chongzhi", "freeData") | not)) else . end)'
+# 斗鱼：用原生 JQ 替代只做 JSON 数组过滤的 JS。
+http-response-jq (?i)^https://apiv2\.douyucdn\.cn/mgapi/livenc/home/getRecV3 'def js_falsy: . == null or . == false or . == 0 or . == ""; if (.data.rec_cont | type) == "array" then .data.rec_cont |= map(select(.ad | js_falsy)) else . end | if (.data.rec_card | type) == "array" then .data.rec_card |= map(if (.card_banner | type) == "array" then .card_banner |= map(select(.ad | js_falsy)) else . end) elif (.data.rec_card | type) == "object" then .data.rec_card |= with_entries(.value |= (if (.card_banner | type) == "array" then .card_banner |= map(select(.ad | js_falsy)) else . end)) else . end'
+# 顺丰首页；模块配置的完整响应在 Map Local 中单独提供。
+http-response-jq (?i)^https://ccsp-egmas\.sf-express\.com/cx-app-base/base/app/appHomeConfig/query$ '.obj |= map(select(.position != 2))'
+# 闲鱼：保留原接口各自的卡片粒度、工具排序与分组。
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlehome\.home\.nextfresh/ '.data.homeTopList |= map(select(.sectionType == "kingkongDo")) | .data.sections |= map(select(.data.clickParam.args.cardType as $ct | $ct != "homeMultiBanner" and $ct != "mamaAD")) | .data.sections |= map(select((.template.name | type == "string") and (.template.name == "idlefish_home_new_commodity_card" or (.template.name | contains("fish_home_tags_item_card")))))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlehome\.widget\.refresh\.get/ '.data.homeTopList |= map(select(.sectionType == "kingkongDo"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idle\.home\.whale\.modulet/ '.data.container.sections |= map(select(.template.name == "fish_home_miniapp"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idle\.fun\.follow\.feed\.list/ '.data.sections |= map(select(.cardType == 2001))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlehome\.home\.community/ '.data.feedsList |= map(select(.template.name == "idlefish_home_new_commodity_card" or .template.name == "idlefish_home_new_content_card"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlehome\.home\.newitem\.page/ '.data.sections |= map(select(.data.clickParam.args.cardType as $ct | $ct != "banner" and $ct != "mamaAD"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idle\.local\.flow\.plat\.section/ '.data.data.components |= map(select(.data and (.data | type == "object") and .data.template and (.data.template | type == "object") and .data.template.name and (.data.template.name | type == "string") and (.data.template.name | contains("fish_city_kingkong"))))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idle\.local\.home\.top/ '.data.data.components |= map(select(.key == "fish_home_second_stage_top_cardV3"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idle\.local\.home/ '.data.sections |= map(select(.template.cardEnum != "ads" and .cardType == "common"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.idle\.user\.page\.my\.adapter/ '.data.container.sections |= map(select((.template.name? // "") | test("^my_fy[0-9]+_(header|user_info|trade|appraise|tools)$"))) | .data.container.sections |= map(.item |= (if .level and .level.exContent and (.level.exContent | has("tips")) then del(.level) else . end)) | .data.container.sections |= map(if .sectionBizCode == "entry2025" then .item.tool.exContent.tools |= [[.[][] | select(.exContent.id as $id | $id == 5 or $id == 39 or $id == 6 or $id == 30 or $id == 29 or $id == 2 or $id == 32 or $id == 3 or $id == 1)] | sort_by(. as $item | ([5,39,6,30,29,2,32,3,1] | index($item.exContent.id))) | [range(0;length;5) as $i | .[$i:$i+5]]][] else . end) | del(.data.ability)'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlehome\.home\.circle\.list/ '.data.circleList[]?.showInfo |= del(.titleImage, .atmosphereImageUrl) | .data.next.headList |= map(select(.bizCode == "main" or .bizCode == "market" or .bizCode == "IDLE_CIRCLE")) | del(.data.next.headList[]?.showInfo.rightTagImage)'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlehome\.magic\.home\.page\.list/ 'del(.data.topList)'
+http-response-jq (?i)^https://g-acs\.m\.goofish\.com/gw/mtop\.taobao\.idlemtopsearch\.search/ '.data.resultList |= map(select(.data.item.main.exContent.dislikeFeedback.clickParam.args.bizType != "ad"))'
+http-response-jq (?i)^https://g-acs\.m\.goofish\.com/gw/mtop\.taobao\.idlemtopsearch\.search/ 'del(.data.resultPrefixBar)'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlemtopsearch\.search\.discover/ '.data.resultList |= map(select(.type != "MarketHotSpot"))'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idlemtopsearch\.item\.search\.activate/ '.data.cardList |= map(if has("cardData") and (.cardData | has("hotwords")) then .cardData |= del(.hotwords) else . end)'
+http-response-jq (?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.idle\.trade\.full\.info/ '.data.components |= map(select(.render == "orderStatusVO" or .render == "addressInfoVO" or .render == "orderInfoVO"))'
+# 小黑盒：只清理 content_type=27 的广告字段。
+http-response-jq (?i)^https://api\.xiaoheihe\.cn/bbs/app/feeds/news '.result.links |= map(if .content_type == 27 then del(.title, .ad_pm, .img_gif, .idea_id, .ad_report, .label, .source, .intranet_only, .ad_cm, .content_type, .PROTOCOL, .img, .ad_ratio) else . end)'
+# 滴滴：保留出行功能，移除营销卡片。
+http-response-jq (?i)^https://as\.xiaojukeji\.com/ep/as/toggles\? '.data |= map(select(.name != "isUseNetConnectivity") | .assign.args.rootca_pin = 0 | .assign.args.sni_list = {})'
+http-response-jq (?i)^https://conf\.diditaxi\.com\.cn/homepage/v\d/other/slow\? 'del(.data.order_cards.new_loss_banner_card, .data.order_cards.call_car_card_80)'
+http-response-jq (?i)^https://conf\.diditaxi\.com\.cn/homepage/v\d/core\? '.data.order_cards.nav_list_card.data |= map(select(.nav_id | IN("dache_anycar", "carmate", "driverservice", "zhandianbashi", "pincheche", "bike", "nav_more_v3"))) | .data.disorder_cards.top_nav_list.data.top_nav_info |= map(select(.nav_id == "chu_xing" or .nav_id == "freight_cargo"))'
+http-response-jq (?i)^https://conf\.diditaxi\.com\.cn/homepage/v\d/other/fast\? 'del(.data.disorder_cards.communicate_card, .data.disorder_cards.not_login_bottom_bar, .data.disorder_cards.riding_code_card, .data.order_cards, .data.disorder_cards.car_icon.data.icon_info_new_agreement, .data.disorder_cards.guess_card, .data.disorder_cards.scene_list_card)'
+http-response-jq (?i)^https://common\.diditaxi\.com\.cn/common/v\d/usercenter/layout '.data.instances |= with_entries(select(.key | IN("center_base_info_card", "center_tool_card", "center_wallet_finance_card", "center_order_related_card"))) | .data.instances.center_wallet_finance_card.data.view_info |= map(select(.title == "优惠卡券"))'
+http-response-jq (?i)^https://api\.udache\.com/gulfstream/porsche/v\d/dache_homepage_layout\? 'del(.data.instances.dache_main_core_icon)'
+http-response-jq (?i)^https://api\.udache\.com/gulfstream/porsche/v\d/dache_homepage_layout\? '.data.instances |= with_entries(select(.key | test("feed_back_|dache_main_member|order_container_|dache_main_core_icon|dache_main_card_")))'
+http-response-jq (?i)^https://api\.udache\.com/intercity/ticket/api/v\d/core/getFullPageInfoLayout\? '.data.disorder_components |= map(select(.name | IN("history_order_card", "inprogress_order_card", "station_calendar", "main_card_v2", "user_history_order")))'
+http-response-jq (?i)^https://daijia\.kuaidadi\.com(:443)?/gateway\?(?:[^#?&]+&)*api=lj\.cos\.apolloConfig '.data |= map(select(.name != "daijia-memberInfo-config" and .name != "daijia-transfer-share-config"))'
+http-response-jq (?i)^https://daijia\.kuaidadi\.com(:443)?/gateway\?(?:[^#?&]+&)*api=lj\.cos\.apolloToggle '.data |= map(select(.name | IN("daijia_app_estimate_pre_req_switch", "daijia_agent_car_picture_check", "daijia_bluetooth_wifi_degrade_switch", "daijia_weixin_publish_login", "daijia_estimate_recommend_degrade_switch", "daijia_yugu_policy_switch", "daijia_home_location_guide_switch", "daijia_estimate_switch")))'
+http-response-jq (?i)^https://api\.udache\.com/gulfstream/porsche/v\d/bronze/pinchengle_homepage_layout$ '.data.instances |= with_entries(select(.key | IN("dacheanycar-certificates-1", "main-card-1", "map-1", "nav-1", "tool-container-1")))'
+http-response-jq (?i)^https://api\.udache\.com/gulfstream/porsche/v\d/SFCHomeTab\? '.data.tab_list |= map(select(.tab_id == "passenger" or .tab_id == "driver"))'
+http-response-jq (?i)^https://htwkop\.xiaojukeji\.com(:443)?/gateway\?(?:[^#?&]+&)*api=hm\.fa\.(?:querySellCardSummary|queryWelfareCenter) 'if has("data") then .data = "{}" else . end'
+http-response-jq (?i)^https://poi\.map\.xiaojukeji\.com/mapapi/startinfo\?(?:[^#?&]+&)*api_version 'del(.rec_destination)'
+http-response-jq (?i)^https://poi\.map\.xiaojukeji\.com/mapapi/poiinfo\?(?:[^#?&]+&)*product_id 'del(.rec_destination)'
+http-response-jq (?i)^https://common\.diditaxi\.com\.cn/user_common/itineraryList\? 'del(.data.tab_nav[]?.tab_param)'
+# Keep：删除明确列出的广告配置项，不使用宽泛字段名匹配。
+http-response-jq (?i)^https://api\.gotokeep\.com/op-engine-webapp/v1/configs$ 'del(.data.adTimeoutReport, .data.spotShowReport, .data.adSupplementIntervalMinutes, .data.adSupplementSwitch, .data.hotFeedSpotAdRequestMoment, .data.activityBrandFeedSpotAdRequestMoment, .data.searchFeedSpotAdRequestMoment, .data.feedDetailSpotAdRequestMoment, .data.homePageFeedSpotAdRequestMoment, .data.followFeedSpotAdRequestMoment, .data.hotFeedRecommendSpotAdRequestMoment, .data.activityFeedSpotAdRequestMoment, .data.hotFeedFindSpotAdRequestMoment, .data.hotFeedSpotFixedPositionSecond, .data.searchFeedSpotFixedPositionSecond, .data.followFeedSpotFixedPositionSecond, .data.activityFeedSpotFixedPositionSecond, .data.searchFeedSpotFixedPositionThird, .data.hotFeedFindSpotFixedPositionSecond, .data.hotFeedFindSpotFixedPositionThird, .data.activityFeedSpotFixedPositionInitial, .data.activityFeedSpotFixedPositionThird, .data.hotFeedDynamicSpotPosition, .data.feedDetailDynamicSpotPosition, .data.hotFeedRecommendDynamicSpotPosition, .data.hotFeedFindDynamicSpotPosition, .data.homePageFeedDynamicSpotPosition, .data.followFeedDynamicSpotPosition, .data.searchFeedSpotPositionDynamic, .data.activityFeedSpotPositionDynamic, .data.activityBrandFeedSpotPositionDynamic, .data.splashAdLoadTimeLimit, .data.courseAdLoadTimeLimit, .data.feedAdLoadTimeLimit, .data.aliHCSpotConfig, .data.gdtSpotConfig, .data.pugcThresholdPercent, .data.pugcStepMinSeconds, .data.pugcStepMaxSeconds, .data.pugcPreLoadEarlySeconds, .data.pugcLoadPostPreRolls, .data.closeConfirmButtonText)'
+http-response-jq (?i)^https://api\.gotokeep\.com/twins/union/feed/union_feed_all$ '.data.modules |= map(select(.code == "unionFeedEntry"))'
+http-response-jq (?i)^https://api\.gotokeep\.com/twins/v4/feed/entryDetail\? 'if has("data") then .data = "{}" else . end'
+http-response-jq (?i)^https://api\.gotokeep\.com/config/v3/basic\? '.data.bottomBarControl.tabs |= map(select(.tabType | IN("home", "schedule", "dynamic_sports", "personal"))) | .data.homeTabs |= map(select(.type | IN("socialTab", "union_feed_all", "homeRecommend", "suitTab", "union_feed_route")))'
+http-response-jq (?i)^https://api\.gotokeep\.com/pencil-webapp/play/v1/games\? '.data.games[].microGames[] |= if .leftIcon? and .leftIcon.type == "aiMode" then del(.leftIcon) else . end'
+# 迅雷、12306、菜鸟。
+http-response-jq (?i)^https://conf-m-ssl\.xunlei\.com/external/ 'del(.values.me_config.entrance_list_vertical_enable, .values.me_config.common_service_list, .values.me_config.banner_service_list)'
+http-response-jq (?i)^https://api-shoulei-ssl\.xunlei\.com/flowhub/v1/slots:batchGet$ '.slots |= map(select(.id == "xl_ios_mytab_vipicon" or (.native.assets.title.text.value? and (.native.assets.title.text.value | IN("清理助手", "云盘容量", "远程设备")))))'
+http-response-jq (?i)^https://ad\.12306\.cn/ad/ser/getAdList$ 'del(.materialsList, .advertParam)'
+http-response-jq (?i)^https://(?:cn-acs\.m|e2e-mtop)\.cainiao\.com/gw/mtop\.cainiao\.app\.e2e\.engine\.page\.fetch 'del(.data.data.data.mainSearch.bizData.searchContents, .data.data.data.operationList)'
+http-response-jq (?i)^https://e2e-mtop\.cainiao\.com/gw/mtop\.cainiao\.app\.e2e\.engine\.page\.fetch\.cn 'del(.data.data.banner, .data.data.activity, .data.data.vip)'
+http-response-jq (?i)^https://longquan-mtop\.cainiao\.com/gw/mtop\.com\.cainiao\.longquan\.place\.getpageresourcecontent\.cn 'del(.data.result.placeContentMap["780001"].contentList)'
+http-response-jq (?i)^https://netflow-mtop\.cainiao\.com/gw/mtop\.cainiao\.guoguo\.nbnetflow\.ads 'if .data.result[0].materialId == "39017" then . else .data = {} end'
+# 微信小程序：数组索引按原先顺序删除，避免索引移动改变结果。
+http-response-jq (?i)^https://mcsp\.cloudpnr\.com/api/miniapp/popular/T_MINIAPP$ 'del(.data)'
+http-response-jq (?i)^https://saas-ad\.cloudpnr\.com/huifuad-base-api/api/tactics/ad$ 'del(.data[0]) | del(.data[1]) | del(.data[2])'
+http-response-jq (?i)^https://rms\.meituan\.com/api/v1/rmsmina/c/queryShopPortalInfo\? 'del(.data.popUpWindows)'
+http-response-jq (?i)^https://chong\.qq\.com/tws/wxmobile/GetProduct4App\? 'del(.respInfo.reserveProductList) | .respInfo.shortcut |= map(select(.name != "充流量" and .name != "领话费券"))'
+http-response-jq (?i)^https://chong\.qq\.com/tws/wxmobile4app/GetSecondProduct\? 'del(.respInfo.productList) | .respInfo.shortcut |= map(select(.name != "充流量" and .name != "领话费券"))'
+http-response-jq (?i)^https://chong\.qq\.com/tws/usernumberinfo/GetUserInfo\? 'del(.data.request.number.markSeat.servicehallOperList, .data.request.number.servicehallOperList, .data.request.number.markSeat.servicehallFuncList, .data.request.number.servicehallFuncList)'
+# 酷安：先把 entityId 绑定为变量，避免管道切换上下文后误删正常内容。
+http-response-jq (?i)^https://api\.coolapk\.com/v6/feed/detail\? '.data.hotReplyRows |= if . then map(select(.id?)) else . end | .data.topReplyRows |= if . then map(select(.id?)) else . end | reduce ("detailSponsorCard", "include_goods", "include_goods_ids") as $key (.; .data[$key] = [])'
+http-response-jq (?i)^https://api\.coolapk\.com/v6/feed/replyList 'if .data? and (.data | type) == "array" and (.data | length) > 0 then .data |= map(select(.id?)) else . end'
+http-response-jq (?i)^https://api\.coolapk\.com/v6/main/dataList '.data |= if type == "array" and length > 0 then map(select(.entityTemplate != "sponsorCard" and .title != "精选配件")) else . end'
+http-response-jq (?i)^https://api\.coolapk\.com/v6/page/dataList 'if (.data | length) > 0 then .data |= map(select(.title? != "酷安热搜" and .entityTemplate? != "imageScaleCard" and .entityTemplate? != "sponsorCard")) else . end'
+http-response-jq (?i)^https://api\.coolapk\.com/v6/main/indexV8 '.data |= if length > 0 then map(select(.entityTemplate != "sponsorCard" and (.entityId as $id | [8639,29349,33006,32557] | index($id) | not) and ((.title // "" | test("值得买|红包")) | not))) else . end'
+http-response-jq (?i)^https://api\.coolapk\.com/v6/main/init '.data |= map(select(.entityId as $id | [944,945,6390] | index($id) | not) | if .entityId == 20131 then .entities |= map(select(.title != "酷品")) else . end)'
+# 可莉广告过滤器：催眠大师 XML 与分享生活。
+http-response (?i)^https?://cmds\.omesoft\.com/HypnotistWS\.asmx "<GetADResult>[\s\S]*?</GetADResult>" "<GetADResult>{\"ret\":0,\"msg\":\"正常\",\"err_code\":0,\"data\":{\"ad\":[]}}</GetADResult>"
+http-response-jq (?i)^https?://api\.fenxianglife\.com/njia/index/popup/v2 '.data.list = []'
+
+# 快递100：同一正文的 14 次对象删字段合并为一次。
+http-response-jq (?i)^https?://p\.kuaidi100\.com/mobile/mobileapi\.do$ 'del(.adsplash,.adIsConsumable,.adProductId,.nologin_tips,.index_banner,.me_banner,.index_banner_shadow,.adshongbao,.adsapp_homepage_ticket_pop,.adsoptimizationsend,.adsapp_activity_ad_array,.adbanner,.adposition,.adShowAgainTime)'
+http-response-jq (?i)^https?://p\.kuaidi100\.com/apicenter/xcx\.dox 'del(.data.secondMenuList)'
+# Jump：修正源表达式的可选冒号和未转义主机点号。
+http-response-jq (?i)^https://switch\.jumpvg\.com/jump/getlaunchad/v2$ 'del(.data.adList) | .data.launchAd.showType = 0'
+http-response-jq (?i)^https://switch\.jumpvg\.com/jump/recommend/ad_conf$ '.data = []'
+# 小红书搜索页：保持原插件的字段存在性判断和值类型。
+http-response-jq (?i)^https://edith\.xiaohongshu\.com/api/sns/v1/search/banner_list$ 'if has("data") then .data = "{}" else . end'
+http-response-jq (?i)^https://edith\.xiaohongshu\.com/api/sns/v1/search/hot_list$ 'if (.data | type) == "object" and (.data | has("items")) then .data.items = "[]" else . end'
+http-response-jq (?i)^https://edith\.xiaohongshu\.com/api/sns/v4/search/hint 'if (.data | type) == "object" and (.data | has("hint_words")) then .data.hint_words = "[]" else . end'
+http-response-jq (?i)^https://edith\.xiaohongshu\.com/api/sns/v4/search/trending\? 'if (.data | type) == "object" then .data |= with_entries(if .key == "queries" then .value = "[]" elif .key == "hint_word" then .value = "{}" else . end) else . end'
+# 斗鱼：直播间推广挂件与六个已有的配置开关。
+http-response-jq (?i)^https://apiv2\.douyucdn\.cn/japi/entrance/roomRes/nc/m/list 'del(.data.pendant_a,.data.entrance_d)'
+http-response-jq (?i)^https://venus\.douyucdn\.cn/venus/config/static/update.+keyCodeSet=flow_config 'with_entries(.key as $key | if (["greatGodGameSitterSwitch","followMoreAnchorEntrance","sdklivebanner","homeActFloatSwitch","bringGoodsSwitch","qqGameSwitch"] | index($key)) then .value = 0 else . end)'
+# 微信小程序：把单纯删字段的脚本改为原生 JQ。
+http-response-jq (?i)^https://minifm\.maxxipoint\.com/banner/list 'del(.data.topBanner)'
+http-response-jq (?i)^https://lawsonapi\.yorentown\.com/area/sh-lawson/app/v1/home 'del(.data.homeButtonList,.data.dysmorphismPictureList)'
+http-response-jq (?i)^https://coco-com\.e\.verystar\.net/v1/home/info 'del(.data.top_background_url,.data.bottom_banner_list)'
+http-response-jq (?i)^https://htwkop\.xiaojukeji\.com/gateway\?(?:[^#?&]+&)*api=hm\.fa\.homeConfig 'del(.data.bannerInfoConfig)'
+http-response-jq (?i)^https://cappapi\.alittle-tea\.com/open\?(?:[^#?&]+&)*method=catering\.set\.ad 'del(.data)'
+http-response-jq (?i)^https://api\.prod\.dj\.mstand\.cn/scrm/mini/app/index/info 'del(.data.homeNewsAdv.jumpValue,.data.homeDineInAdv,.data.homePickupAdv,.data.nearbyShopInfo,.data.homeEventThemesAdv,.data.eventThemes,.data.homeRootAdv,.data.homeTopAdv,.data.homeDialogAdv,.data.homeBannerAdv,.data.homeCouponAdv,.data.homeCompanyAdv,.data.homeDeliveryAdv)'
+http-response-jq (?i)^https://passenger\.t3go\.cn/(?:solution-|common-)?(?:passenger-)?(?:activity-|app-)?api/notoken/(?:trip/)?api/(?:home/|common/)?(?:v[1-3]/)?(?:ad/getNegativescreen|solution/passenger/open/getHomeMenu|leftmenu|getHomeInfoGlobal) 'del(.data)'
+http-response-jq (?i)^https://newton\.gumingnc\.com/newton-buyer/newton/buyer/(?:ump|touch|external/front) '.data = []'
+http-response-jq (?i)^https://mapi\.xiaotucc\.com/main_page/index/getActivity 'del(.data.p3)'
+http-response-jq (?i)^https://mapi\.xiaotucc\.com/mall/main 'del(.data)'
+# 两个接口的内容是 JSON 字符串：只解析一次，坏数据保持原样。
+http-response-jq (?i)^https://ump\.ems\.com\.cn/new-generation-extend/redis/pageInfoByChannel '. as $original | try (.info.moduleJson |= (fromjson | map(select(((.moduleName // "") | contains("广告")) | not)) | tojson)) catch $original'
+http-response-jq (?i)^https://webapi\.qmai\.cn/web/catering/design/homePage-Config '. as $original | try (.data.config |= (fromjson | map(select((.id // "") as $id | ["13502ede-f5fd-4d5c-90f5-f2454a30fda0","c1caaf62-e91d-4040-b533-dab39c0fec13","cc9d17ec-3ac5-494b-b82e-8d3c72c243d4","7bef8fe9-0daf-46b3-a2b0-dd9fba49423f","ff7e1263-d8d2-4f09-9947-d8c43c77bb10","874197b4-fe93-4a80-a555-8df1bc7e8211","0ba6a615-b7e9-48aa-afe7-329635385f2c","a11b0e7d-a162-4802-ac71-21d98e8adddf"] | any(. as $bad | $id | contains($bad)) | not)) | tojson)) catch $original'
+# 茶颜悦色：保持原作者的静态替换图，改用可访问的固定版本公开镜像。
+http-response-jq (?i)^https://miniapp\.sexytea2013\.com/cms/slot/queryByCodes\?(?:[^#?&]+&)*codes=INDEX_TOP_BANNER 'del(.data.INDEX_SLOT_01,.data.INDEX_SLOT_02) | if (.data.INDEX_TOP_BANNER.contents | type) == "array" then .data.INDEX_TOP_BANNER.contents |= map(del(.bubble,.figure) | .value = "https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/resources/cyys1.jpg") else . end'
+# IT之家：两个可选开关均默认关闭；广告条目和焦点广告始终移除。
+http-response-jq (?i)^https://napi\.ithome\.com/api/(?:news/indexv2/iphone/\d+|topmenu/getfeeds\?) 'def js_falsy: . == null or . == false or . == 0 or . == ""; if (.data.list | type) == "array" then .data.list |= map(select(({{{IThome_RemoveBanners}}} and .feedType == 10002 | not) and ({{{IThome_RemovePinned}}} and .feedType == 10003 | not) and .feedContent.flag != 2 and .feedType != 10004 and (any(.feedContent.smallTags[]?; .text == "广告") | not)) | if (.feedContent.focusNewsData | type) == "array" then .feedContent.focusNewsData |= map(select(.isAd | js_falsy)) else . end) else . end'
+# 彩云：A03 活动保留结构但禁用入口；其他活动返回作者原来的空列表。
+http-response-jq (?i)^https://api\.caiyunapp\.com/v1/activity\?(?:[^#?&]+&)*type_id=A03(?:&|$) 'def js_falsy: . == null or . == false or . == 0 or . == ""; if (.interval | js_falsy | not) then .interval = 2592000 else . end | if (.activities | type) == "array" then .activities |= map(if (.name | js_falsy | not) and (.type | js_falsy | not) and (.feature | js_falsy | not) then .feature = false else . end) else . end'
+http-response-jq (?i)^https://wrapper\.cyapi\.cn/v1/activity\?(?:[^#?&]+&)*type_id=A03(?:&|$) 'if .interval != null and .interval != false and .interval != 0 and .interval != "" then .interval = 2592000 else . end | if (.activities | type) == "array" and (.activities | length) > 0 then .activities = [] else . end'
+http-response-jq (?i)^https://(?:api\.caiyunapp\.com|wrapper\.cyapi\.cn)/v1/activity\?(?!(?:[^#?&]+&)*type_id=A03(?:&|$)) '{"status":"ok","activities":[{"items":[]}]}'
+
+[Map Local]
+# 天气通：开屏、活动、运营位及我的页面推广。
+(?i)^https://forecast\.sina\.cn/app/overall/switch\.php\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://tqt\.weibo\.cn/(?:business/advert/|user/device/ad_multi_star\?|operation/activity/|api/user/user/\d\.\d/\?(?:[^#?&]+&)*method=personal_center$) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 中国天气（WeatherChina）。
+(?i)^https://tqtdata\.weathercn\.com/forestbox/getVideoListApp\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 网易大神：保留原来的 404。
+(?i)^https://god\.gameyw\.netease\.com/v\d/ad data-type=text data="" status-code=404
+# 淘票票：开屏、浮层及广告查询。
+(?i)^https://acs\.m\.taobao\.com/gw/mtop\.film\.(?:life\.popup\.get|mtopindependentadvertiseapi\.queryadvertise|mtopitemadvertiseapi\.queryadvertise)/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 乐播投屏：主页浮层、提示、运营位和用户横幅。
+(?i)^https://saas\.hpplay\.cn/api/lebo-desk/endpoint/app-resource/(?:app_home_pop_up|app_home_tips|app_index_operate2|app-user-banner) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://saas\.hpplay\.cn/api/lebo-rabbit/app-card/list data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 华住会：保留 querySelectHotel 的原双斜杠路径。
+(?i)^https://hweb-manager\.huazhu\.com/(?:notice/getAppPopupNotifyAlert|hotels/ad/getHotelListNoticeMerge)$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://hweb-hotel\.huazhu\.com/(?:home/(?:getHomeLoinBanner|queryHotelBrand)|/home/querySelectHotel)$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 飞猪（TaobaoTravel）。
+(?i)^https://acs\.m\.taobao\.com/gw/(?:mtop\.fliggy\.(?:crm\.screen\.(?:allresource|predict)|tripzoo\.new\.couponlist|recommend\.common\.guess\.tab\.feeds)|mtop\.trip\.my\.recommendcard)/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 大麦。
+(?i)^https://acs\.m\.taobao\.com/gw/mtop\.damai\.(?:wireless\.home\.welcome|mec\.popup\.get)/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 哔哩哔哩漫画：同一返回内容的接口合并；重复的 GetBubbles 只保留一次。
+(?i)^https://manga\.bilibili\.com/twirp/comic\.v\d\.Comic/(?:GetActivityTab|GetBubbles|GetCommonBanner|SearchBanner|AppInit|ListFlash) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://manga\.bilibili\.com/twirp/(?:user\.v\d\.SeasonV\d/GetSeasonInfo|bookshelf\.v\d\.Bookshelf/(?:ListEmptyRecommend|NovelRecommend)|novel\.v\d\.Novel/MoreRecommend) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 百度网盘。
+(?i)^https://pan\.baidu\.com/(?:api/(?:getconfig|getsyscfg|taskscore/tasklist|plugin/get)|act/api/activityentry|rest/\d\.\d/pcs/adv|recommend/query/list)\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 百度贴吧：搜索起始页的返回结构与空 JSON 分开保留。
+(?i)^https?://tiebac\.baidu\.com/c/f/(?:forum/getInterestClassList|search/discover)$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https?://tieba\.baidu\.com/mo/q/search/startPage\? data-type=text data="{\"no\":0,\"error\":\"success\"}" status-code=200 header="Content-Type:application/json"
+(?i)^https?://tieba\.baidu\.com/c/f/search/discover$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://tieba\.baidu\.com/c/f/forum/getForumAlbum$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^http://c\.tieba\.baidu\.com/c/f/forum/hotforum$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# e充电（EasyCharge）。
+(?i)^https://aserver-evone\.echargenet\.com/orange/datacenter/snapshot-meta\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api-evone\.echargenet\.com/gw/(?:evone\.echargeapi\.open\.ad\.getadmaterials|evone\.appsns\.open\.(?:efriend\.(?:topic\.listrecommenttopic|post\.listapppost)|merchant\.(?:merchant\.list|news\.pagelistapp)))/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 盒马：营销单页、推荐流、搭配购。
+(?i)^https://acs-m\.freshippo\.com/gw/mtop\.wdk\.(?:render\.(?:querysinglepage|querysearchpage)|sg\.(?:queryinnerpage|querysinglescene)|lbs\.address\.getshopinfolist|melon\.collocation|fc\.recommend\.feedscommondservice)/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 彩云天气。
+(?i)^https://biz\.cyapi\.cn/(?:p/v1/entries|p/v1/trial_card/info|v2/product) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://starplucker\.cyapi\.cn/v3/(?:config/cypage/\w+/conditions|notification/message_center|operation/homefeatures) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# ECOVACS HOME。
+(?i)^https://(?:api-app\.dc-cn\.cn\.ecouser\.net/api/ecms/app/ad/|gl-cn-api\.ecovacs\.cn/v1/private/) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 京东外卖。
+(?i)^https://color\.jddj\.com/client\.action\?(?:[^#?&]+&)*functionId=uniformRecommend data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://color\.jddj\.com/client\.action\?(?:[^#?&]+&)*functionId=search_recommendRanking$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 京东：搜索填充词、站点拉取和推荐。
+(?i)^https://api\.m\.jd\.com/client\.action\?(?:[^#?&]+&)*functionId=(?:searchBoxWord|stationPullService|uniformRecommend[06]) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 库街区。
+(?i)^https://api\.kurobbs\.com/config/(?:getOpenScreen$|index/windows$|search/getSearchConfig\?) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.kurobbs\.com/forum/app/topic/hotlist\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 广告平台拦截器：这四个接口按原配置返回 404。
+(?i)^https://(?:video-dsp\.pddpic\.com/market-dsp-video/|t-dsp\.pinduoduo\.com/dspcb/i/mrk_|images\.pinduoduo\.com/(?:mrk/|marketing_api/)) data-type=text data="" status-code=404
+# 腾讯文档。
+(?i)^https://tianshu\.qq\.com/open/ts_access/GetAds\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://h5\.qzone\.qq\.com/p/adboss/api/json/ts_access/GetAds$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 瑞幸：保留原来的 404，合并同主机同返回值的接口。
+(?i)^https://capi\.lkcoffee\.com/resource/(?:m/(?:growUp/calendarList|promotion/giftCard/topPage|sys/base/myLittleLuck|sys/common/modules|eorder/product/popAppTagProductList|sys/app/adposNew)|core/v2/(?:menu/ordinaryUserLayeredArea|homepage/homePageCoffeeList)) data-type=text data="" status-code=404
+# 起点：开屏、广告、弹窗及相关推荐。
+(?i)^https://magev6\.if\.qidian\.com/argus/api/(?:v4/client/getsplashscreen\?|v1/(?:adv/|checkin/simpleinfo\?|push/getdialog\?|message/getpushedmessagelist$|maintain/playstrip$|dailyrecommend/recommendBook\?|freshman/bookshelfbtn$|bookshelf/getTopOperation$|booksearch/hotWords\?|followsubscribe/showChapterEndModule\?|young/getconf$)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ywab\.reader\.qq\.com/user/experiments/v2\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 拼多多：订单营销、活动、推荐和评论提醒。
+(?i)^https://api\.pinduoduo\.com/(?:search_hotquery|api/(?:aristotle/(?:unrated_order_for_unreceived_tab|query_order_list_tabs_element)|aquarius/hungary/global/homepage|caterham/v3/query/(?:order_express_group|new_chat_group|personal|my_order_group|likes)|zaire_biz/chat/resource/get_list_data|alexa/goods/back_up|brand-olay/goods_detail/bybt_guide|engels/(?:reviews/require/append|wait/receive/review)|phantom/gbdbpdv/extra|manufacturer/cross/shortcut/list|dunkirk/liveactivity/push/create/url/report|growth/nagato/app/index/gather|buffon/nasus/recommend|caterham/v2/query/goods_detail_with_tags))\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 快递100。
+(?i)^https?://p\.kuaidi100\.com/(?:advertisement/|e-commerce/act/actInfo\?|apicenter/card\.dox) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 微信公众号。
+(?i)^https://mp\.weixin\.qq\.com/mp/(?:cps_product_info|getappmsgad|jsmonitor|masonryfeed|relatedarticle)\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://mp\.weixin\.qq\.com/mp/relatedsearchword data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 薄荷健康。
+(?i)^https://api\.boohee\.com/(?:meta-interface/v1/index/(?:page_float_bubbles|tool_buttons|sensor-banners)|app-interface/v1/search/search)\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://status\.boohee\.com/api/v1/merged_messages$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://bohe\.sfo-tx-shanghai-01\.saas\.sensorsdata\.cn/api/v2/sfo/user_popup_configs\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# YY。
+(?i)^https://(?:yyapp-fastnet\.yy\.com/dispatch|data\.3g\.yy\.com/popup/topLiveCardPopup|yyapp-act-entrance\.yy\.com/entrance/list)\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 小红书：水印图返回透明 GIF，其余接口返回空 JSON。
+(?i)^https://ci\.xiaohongshu\.com/system_config/watermark data-type=tiny-gif status-code=200
+(?i)^https://edith\.xiaohongshu\.com/api/sns/(?:v1/surprisebox/(?:get_style|open|submit_action)|v2/guide/user_banner|v3/note/guide) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://www\.xiaohongshu\.com/api/marketing/box/trigger\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://www\.xiaohongshu\.com/api/sns/(?:v1/ads/resource|v2/hey/\w+/hey_gallery) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 斗鱼。
+(?i)^https://rtbapi\.douyucdn\.cn/japi/sign/app/getinfo data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 顺丰：完整的模块配置另用有效 JSON 资源；广告接口保持空 JSON。
+(?i)^https://ucmp(?:-static)?\.sf-express\.com/proxy/ccspBase/module-config/(?:login/)?query\? data-type=file data=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/resources/SFExpress-module-config.json status-code=200 header="Content-Type:application/json"
+(?i)^https://ccsp-egmas\.sf-express\.com/cx-app-base/base/app/ad/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ucmp\.sf-express\.com/proxy/esgcempcore/memberGoods/pointMallService/goodsList$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 闲鱼。
+(?i)^https://acs\.m\.goofish\.com/gw/mtop\.taobao\.(?:idlecommerce\.splash\.ads|idle\.(?:user\.strategy\.list|item\.recommend\.list|local\.near\.by\.corner\.info|item\.buy\.feeds|playboy\.recommend)|idlemtopsearch\.search\.shade)/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 小黑盒。
+(?i)^https://api\.xiaoheihe\.cn/account/get_ads_info_v2 data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 滴滴：两条 mget 规则保持原来的查询串/行尾边界。
+(?i)^https://res\.xiaojukeji\.com/resapi/activity/mget(?:\?|$) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://daijia\.kuaidadi\.com(:443)?/gateway\?(?:[^#?&]+&)*api=(?:prado\.cms\.(?:delivery\.batch|AggregateDeliveryRemoteService\.aggregateDelivery)|lj\.c\.p\.queryLevelAndRightsStatus|lj\.cos\.p\.popup) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.udache\.com/gulfstream/porsche/v\d/pSFCHomePage\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://htwkop-st\.xiaojukeji\.com/gateway\?(?:[^#?&]+&)*api=cms\.htw\.delivery\.batch data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://freight\.xiaojukeji\.com/gateway\?(?:[^#?&]+&)*api=freight\.d\.core\.multiDisplayV\d data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# Keep。
+(?i)^https://api\.gotokeep\.com/(?:op-engine-webapp/v1/ad/|search/v6/default/keyword/list\?|twins/v4/feed/followPage\?|twins/union/feed/function\?|guide-webapp/v1/popup/getPopUp\?|search/v5/hotCourse/list$|search/v4/hotHashtag/list$|search/v4/hotword/list\?) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 菜鸟：保留源插件的 404 响应。
+(?i)^https://nbcps-mtop\.cainiao\.com/gw/mtop\.cainiao\.nbcps\.presentation\.fetch\.cn data-type=text data="" status-code=404
+(?i)^https://netflow-mtop\.cainiao\.com/gw/mtop\.cainiao\.guoguo\.nbnetflow\.ads\.index data-type=text data="" status-code=404
+(?i)^https://cn-acs\.m\.cainiao\.com/gw/mtop\.cainiao\.(?:adkeyword\.get\.cn|guoguo\.nbnetflow\.ads\.m?show) data-type=text data="" status-code=404
+# 向日葵。
+(?i)^https://client-api-v2\.oray\.com/materials/SLCC_iOS_DEVICE_FREE\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 淘宝及阿里系开屏/营销。
+(?i)^https://acs\.m\.taobao\.com/gw/(?:mtop\.fliggy\.crm\.screen\.(?:allresource|predict)|mtop\.alibaba\.advertisementservice\.getadv|mtop\.alimama\.etao\.config\.query/.+?etao_advertise|mtop\.alimusic\.common\.mobileservice\.startinit|mtop\.etao\.noah\.query/.+tao_splash|mtop\.film\.mtopadvertiseapi\.queryadvertise|mtop\.o2o\.ad\.gateway\.get|mtop\.taobao\.idle\.home\.welcome|mtop\.trip\.activity\.querytmsresources) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://(?:gw|heic)\.alicdn\.com/imgextra/i\d/\d*/?[\w!]+-\d-(?:octopus|tps)-(?:1080|1125)-\d{4}\.(?:jpg|png)_(?:1\d{3}|9\d{2})x(?:\d|1\d{3}|9\d{2})q[59]0 data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://guide-acs\.m\.taobao\.com/gw/mtop\.taobao\.(?:volvo\.secondfloor\.getconfig|wireless\.home\.newface\.awesome\.get) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 财新。
+(?i)^https://entities\.caixin\.com/api/(?:dataplus/promotionHints|public/push/appIndex|public/recommendNews) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://gateway\.caixin\.com/api/app-api/cxAdInfo/selectIndexAdInfo data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://mappsv5\.caixin\.com/channelv5/article_ad_ios_info\.json data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://gg\.caixin\.com/s\?(?:[^#?&]+&)*z=caixin&slot=\d+ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://msgapi\.caixin\.com/msg_api/annmsg/annlist data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# IT之家。
+(?i)^https?://dat\.ruanmei\.com/ithome/money/acd\.json$ data-type=text data="" status-code=404
+# 酷安。
+(?i)^https://api\.coolapk\.com/v6/search\?.*type=hotSearch data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+# 微信小程序：企迈点单、银行广告和丰巢。404 与空 JSON 分开保留。
+(?i)^https://webapi\.qmai\.cn/web/catering/advertising/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://webapi\.qmai\.cn/web/cmk-center/marketing/canvas/advert-reach data-type=text data="" status-code=404
+(?i)^https://images\.qmai\.cn/s214925/2023 data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://creditcardapp\.bankcomm\.com/cnsvPmpaMdbcardWeb/page/getGuidePageAds data-type=text data="" status-code=404
+(?i)^https://mbmodule-openapi\.paas\.cmbchina\.com/graphic/v2/module/graphic data-type=text data="" status-code=404
+(?i)^https://webchatapp\.fcbox\.com/(?:fcboxactivityweb/api/v2/clientPage/(?:modulesAggregated\?|getHomeLiveInfo$)|post/suggestion/query$|fcboxactivityweb/marketingEntrance/(?:v2/infoWithItems$|info$)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://dsp\.fcbox\.com/adSearch/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 加油、商超、餐饮。
+(?i)^https://app\.95504\.net/app/json/page_ad/initPageAd\?(?:[^#?&]+&)*ver= data-type=text data="" status-code=404
+(?i)^https://minipro\.95504\.net/app/json/ad/get(?:Pop|Index)AdData data-type=text data="" status-code=404
+(?i)^https://flow\.dmall\.com/app/home/pops data-type=text data="" status-code=404
+(?i)^https://api\.yonghuivip\.com/api/fp/homepage/pop data-type=text data="" status-code=404
+(?i)^https://activity\.yonghuivip\.com/api/(?:app/fp/homepage/pop|/web/shensuan/ad) data-type=text data="" status-code=404
+(?i)^https://sauron-report\.yonghuivip\.com/collect data-type=text data="" status-code=404
+(?i)^https://res\.pizzahut\.com\.cn/CRM data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.mcd\.cn/bff/portal/home/hotActivity data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://3pp\.starbucks\.com\.cn/wxmem/(?:popup|index/(?:banner|global)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 出行、快递。
+(?i)^https://wechat-api\.i-xiaoma\.com\.cn/app/v1/bus/wechat/content data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://apiproxy\.zuche\.com/resource/carrctapi/home/(?:marketing|page/advertising) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://miniprogram\.ishansong\.com/cms/faq/query data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ads\.ishansong\.com/advert data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ump\.ems\.com\.cn/mailAd$ data-type=text data="" status-code=404
+(?i)^https://minicap\.caocaokeji\.cn/advert-bss/pullAdvert data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://r2\.gzyct\.com/qrcode/advert data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://applets\.jtexpress\.com\.cn data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.hellobike\.com/api\?(?:[^#?&]+&)*adx data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.kuaidihelp\.com/g_order_core/v2/mina/User/getBannerList data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wxproj\.seeyouyima\.com/data/today_tips data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://suyun-guest\.daojia\.com/api/kuaigou/banjia/review data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ne\.gdsz\.sinopec\.com/gateway/api/omp/mt/appAdvertising data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://qapi\.huolala\.cn/(?:ads|home_new_user|get_service_list) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://appuser-static\.huolala\.cn/imgs data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://apis\.alenable\.com/(?:mall/v1/api/mall/skin/user/get|ycx/v1/api/adPut) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://dock\.tenchii\.com/DockCard/api/mini/card/list data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://customer-app\.sto\.cn/api/app/banner/banner data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://sto-customer-app\.oss-cn-shanghai\.aliyuncs\.com/images data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://supplier-api\.imdada\.cn/fe/public/ad/spot\?(?:[^#?&]+&)*forwardServiceName=growth-activity data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://hdgateway\.zto\.com/(?:getApolloConfig|track|getAdInfo|listJumperShow) data-type=text data="" status-code=404
+(?i)^https://fscdn\.zto\.com/fs1 data-type=text data="" status-code=404
+# 共享充电宝、洗衣、骑行。
+(?i)^https://mobile-api\.imlaidian\.com/api/args data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wxs-weixin\.sd\.zhumanggroup\.com/api/v2/ad data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://s\.jiediankeji\.com/adv data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://smarket\.dian\.so data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://file\.dian\.so/c/leto data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://aag\.enmonster\.com/apa/index/advert/skin data-type=text data="" status-code=404
+(?i)^https://ad\.xiaotucc\.com/advert data-type=text data="" status-code=404
+(?i)^https://api-marketing\.zhinengxiyifang\.cn/api/v2/cloudcode/wechat/bid data-type=text data="" status-code=404
+(?i)^https://api\.songguo7\.com/(?:\w{3})?mp/v2/misc/(?:toast|user_operate_info|unlock_without_order|unlock_operate_info) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ccmsupport-sz\.tenpay\.com/cgi-bin/common/ccm_page_element.cgi data-type=text data="" status-code=404
+# 茶饮、酒店。
+(?i)^https://tm-api\.pin-dao\.cn/home/api/(?:index/activeConfig/v2|resource/config/homeBannerNodes) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api-fouth-mem\.huazhu\.com/api/rights/bannerList data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wxapp\.bestwehotel\.com/gw3/app-mini/trip-hotel-banner/activity/getActivityInfo data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wx\.bthhotels\.com/miniapp/weixin/v1/home/index_banner data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://app\.homeinns\.com/api/(?:v6/indexs|v5/(?:local|index)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://mxsa\.mxbc\.net/api/v1/adinfo/adplace/query data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://htwkop\.xiaojukeji\.com/gateway\?(?:[^#?&]+&)*api=(?:cms\.htw\.delivery|hm\.fa\.(?:combineHomepageInfo|mallRecommend)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://lawsonapi\.yorentown\.com/area/sh-lawson/app/v1/mina/systemSetting data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://plt\.yorentown\.com/pltapp/v1/banner data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://member\.lxjchina\.com\.cn/mini-server/home/page/banner data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://cbd-gateway-service-applets\.hualala\.com/arch/api/banner/QueryBannerImgList data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://alittle-tea\.oss-cn-shanghai\.aliyuncs\.com/images/platform/alittle data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.prod\.dj\.mstand\.cn/scrm/app/mdm/index/listAdv\?(?:[^#?&]+&)*types data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://gw-passenger-wap\.01zhuanche\.com/gw-passenger-wap/zhuanche-passenger-token/commonSkipToken/common/getAdList data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://www\.deppon\.com/gwapi/memberService/eco/member/grade/commonInterface data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://passengerapi\.saicmobility\.com/(?:ad/requestAd|pay/v1/queryOpenedCouponPackages) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://passenger\.t3go\.cn/passenger-activity-api/notoken/api/v1/resource/getSource data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 携程、猫眼、途虎、横店影城、乐堡。
+(?i)^https://m\.ctrip\.com/restapi/soa2/(?:13916/tripAds|12673/queryWeChatHotEvent) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ad\.maoyan\.com/api/position/detail data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wx\.maoyan\.com/maoyansh/(?:api/mobile/(?:hotMatchList|eSportsIps)|myshow/(?:ajax/(?:movie/wonderShow|performances/(?:calendar/0|rob/main)|celebrityBasicList/query|recommend/performances|ad/detail))) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://vod-movie\.maoyan\.com/vod/video/onlineMovies\.json data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.maoyan\.com/sns/common/feed/channel/v2/list\.json data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://mkt-gateway\.tuhu\.cn/mkt-scene-marketing-service/api/scene/queryScheme data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.hengdianfilm\.com//cinema/queryAvailableBannerInfo/[24]\?(?:[^#?&]+&)*cid= data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://tbgapplet\.carlsberg\.asia/tuborg/banner/(?:loading|index) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 拼多多、顺丰、代驾、巴士、12306 和中国移动小程序。
+(?i)^https://api\.pinduoduo\.com/api/ktt_gateway/activity/feeds/personal_home_page/ data-type=text data="" status-code=404
+(?i)^https://ucmp\.sf-express\.com/proxy/(?:operation-platform/info-flow-adver/query|esgcempcore/memberGoods/pointMallService/goodsList) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://as\.xiaojukeji\.com/ep/as/conf\?(?:[^#?&]+&)*ns=daijia-front&name= data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.szbgcx\.cn/account/adv/ data-type=text data="" status-code=404
+(?i)^https://mobile\.12306\.cn/wxxcx/openplatform-inner/miniprogram/wifiapps/(?:appFrontEnd/v2/lounge/open-smooth-common/(?:qrCode/getAdvInfo$|carService/getCivilzedSlogan)|tourism/tourismBase/api/scenic/getThemeProduct(?:\?|$)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wx\.online-cmcc\.cn/contactpoint/customer/api/list\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://wx\.10086\.cn/qwhdhub/activity/info data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+# 通用合集：穿山甲、车来了、最右、小米与华米。
+(?i)^https?://api-access\.pangolin-sdk-toutiao\.com/api/ad/union/sdk data-type=text data="" status-code=404
+(?i)^https://cdn\.web\.chelaile\.net\.cn/info-flow/index\.html data-type=text data="" status-code=404
+(?i)^http://mercury-gateway\.ixiaochuan\.cn/mercury/v1/ad/ data-type=text data="" status-code=404
+(?i)^https?://api\.m\.mi\.com/v\d/app/start data-type=text data="" status-code=200
+(?i)^https?://api\.jr\.mi\.com/(?:v\d/adv/|jr/api/playScreen) data-type=text data="" status-code=200
+(?i)^https?://api-mifit.+?\.huami\.com/discovery/mi/discovery/.+?_ad\? data-type=text data="" status-code=200
+(?i)^https?://home\.mi\.com/cgi-op/api/v\d/recommendation/banner data-type=text data="" status-code=404
+# 无后缀 api-mifit 的六个图片接口原先被后面的 404 覆盖，明确保留优先级。
+(?i)^https?://(?:api-mifit|api-mifit-\w+)\.huami\.com/discovery/mi/discovery/\w+_ad\? data-type=text data="" status-code=404
+(?i)^https://shopapi\.io\.mi\.com/mtop/mf/resource/homePage/pageConfig data-type=text data="" status-code=200
+(?i)^https://api-mifit-cn2\.huami\.com/discovery/mi/cards/startpage_ad data-type=text data="" status-code=404
+# 米读及指定开屏图片。
+(?i)^https://apiwz\.midukanshu\.com/(?:advert/(?:getPopup|treasureInfo)|config/getAds)$ data-type=text data="" status-code=404
+(?i)^http://img\.(?:dailmo|allahall)\.com/img/(?:61/23c7125bfe6166d69f3bff5b0ca4d31e|50/edb40c6392f848df37f9c31d8a6f90f6|6/90585d9e96c73dd49644af57d8501624|5/6cb2aa237ce1f65944aa1ecb29fbdeef)\.jpg data-type=text data="" status-code=404
+(?i)^http://img\.allahall\.com/img/59/6a13a75dfe46ebfdac96bd27ef098885\.jpg data-type=text data="" status-code=404
+(?i)^http://app\.zhoudamozi\.com/ad/.+ data-type=text data="" status-code=200
+(?i)^https://api\.(?:pinduoduo|yangkeduo)\.com/api/cappuccino/splash data-type=text data="" status-code=404
+# 阿里图片开屏；idle.home.welcome 已由淘宝条目返回 JSON。
+(?i)^https://gw\.alicdn\.com/(?:mt/|(?:tfs|tps)/.+\d{3,4}-\d{4}) data-type=text data="" status-code=404
+(?i)^https://m\.qianbao\.qq\.com/services/walletHome/get(?:QQshop|Game|Foot)Data\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://hfapp-service\.qweather\.net/v2\.0/app/ad/list\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 航旅纵横：home 原 HTTP 全拦截会遮住 rpid 条件拦截，改由 Umetrip 脚本判定；umerp 维持原响应。
+(?i)^http://umerp\.umetrip\.com/gateway/api/umetrip/native data-type=text data="" status-code=404
+(?i)^https?://us\.l\.qq\.com/exapp data-type=text data="" status-code=200
+(?i)^https://client\.app\.coc\.10086\.cn/biz-orange/DN/init/startInit$ data-type=text data="" status-code=404
+# 有道。
+(?i)^https://dict\.youdao\.com/(?:course/tab/translateTab|homepage/tile|commonsearch|vip/activity/couponinfo|dictusertask/system) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api-overmind\.youdao\.com/openapi/get/luna/dict/dict-mobile/prod/dictCommonConfig data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://cdke\.youdao\.com/course3/recommend/dict/startup data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https?://ecard\.shenzhentong\.com/wxweb/bwxppub2/QryAdvertList\.do data-type=text data="" status-code=200
+(?i)^https?://mob\.mddcloud\.com\.cn/adApi/advert/(?:first|third)part/advertList data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https?://t-dsp\.pinduoduo\.com data-type=text data="" status-code=200
+(?i)^https?://mobads-pre-config\.cdn\.bcebos\.com/preload\.php data-type=text data="" status-code=200
+(?i)^https?://sfo\.mddcloud\.com\.cn/api/v2/sfo/popup_displays? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https?://tower\.ubixioe\.com/mob/mediation data-type=text data="" status-code=404
+(?i)^https?://toblog\.ctobsnssdk\.com data-type=text data="" status-code=200
+(?i)^https?://conf-darwin\.xycdn\.com data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https?://sdk1xyajs\.data\.kuiniuca\.com data-type=text data="" status-code=404
+# 创客贴、稿定、猫眼、站酷、香山、懒饭、向日葵、广电。
+(?i)^https://gw\.chuangkit\.com/team/app/common/ad/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://qiye\.gaoding\.com/api/v3/oc/v2/delivery-pits/ios-splash/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://p0\.pipi\.cn/(?:adAdmin|mediaplus/maoyantong_ads_fe)/\w+\.jpg\?(?:[^#?&]+&)*imageMogr2/quality/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://p0\.pipi\.cn/(?:adAdmin|mediaplus/maoyantong_ads_fe)/\w+\.(?:jpg|png)\?(?:[^#?&]+&)*imageMogr2/thumbnail/(?:860x0|!165x165|!1049x1169) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.zcool\.com\.cn/v\d\.\d\.\d/common/open-screen data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://shealthyapi\.senssun\.com/v1/app/banner/findByType\?(?:[^#?&]+&)*type=bottom$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://lanfanapp\.com/api/v1/ads/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://client-api-v2\.oray\.com/materials/(?:SLCC_IOS_STARTUP|SLCC_IOS_DEVICE|SUNLOGIN_CLIENT_IOS_PROMOTION) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://app\.10099\.com\.cn/contact-web/api/version/getFlashScreenPage data-type=text data="" status-code=404
+(?i)^https://api\.flydigi\.com/android/v2/ad data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://api\.xiangji\.qq\.com/splash$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://cdn\.cmgadx\.com/sdk/pool/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://qadx\.qinlinad\.com/ad/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://watch\.iot\.mi\.com/cgi-op/api/v1/watch/health/resource\?(?:[^#?&]+&)*business=(?:MI_WATCH_SPORT|MI_HEALTH_DEVICE_TAB_PAGE) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://acs\.m\.taobao\.com/gw/mtop\.film\.(?:mtopadvertiseapi\.queryloadingbanner|life\.popup\.get)/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://d\.socdm\.com/adsv/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 联通：保持原来的成功码和对象结构。
+(?i)^https?://m\.client\.10010\.com/mobileService/customer/accountListData\.htm data-type=text data="{\"imgIndex\":\"0\",\"adv\":{\"startup_adv\":{\"advCntList\":[],\"buttonList\":[]}},\"respCode\":\"0000\"}" status-code=200 header="Content-Type:application/json"
+
+# 拼多多扫码取件：在原始 CDN URL 上提供已核对的去推广脚本，HTML 无需改写到失效站点。
+^https://pfile\.pddpic\.com/mdkd/mdkd/_next/static/chunks/9410-b8806e870a26db7d\.js$ data-type=file data=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/resources/PDD-9410.js status-code=200 header="Content-Type:application/javascript"
+
+[URL Rewrite]
+# 斗鱼：把内嵌 CDN 主机的 HTTP IP 地址重定向回原始主机，保留路径。
+^http://(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/(hlsh5p1\.douyucdn2\.cn)(.*) http://$1$2 307
+# QQ 链接重定向：从 Loon 条件重写逐条改为原生 307；使用原捕获组，去掉包装跟踪参数。
+(?i)^https://c\.pc\.qq\.com/middlem\.html\?pfurl=(http.*)&pfuin=.* $1 307
+(?i)^https://c\.pc\.qq\.com/middlect\.html\?pfuin=.*&pfurl=(http.*)&gjsublevel=.* $1 307
+(?i)^https://c\.pc\.qq\.com/middlect\.html\?iscontinue=.*pfurl=(http.*)&pfuin=.* $1 307
+(?i)^https://pingtas\.qq\.com/webview/pingd\?dm=c\.pc\.qq\.com&pvi=\d+&si=s\d+&url=/middlem\.html\?pfurl%3d(http.*)%26pfuin%3d.*%26pfuin%3d.* $1 307
+(?i)^https://cgi\.connect\.qq\.com/qqconnectopen/get_urlinfoForQQV2\?url=(http.*) $1 307
+(?i)^https://c\.pc\.qq\.com/index\.html\?pfurl=(http.*)&pfuin=.* $1 307
+(?i)^https://c\.pc\.qq\.com/ios\.html\?url=(http.*)&level=.* $1 307
+(?i)^https://pingtas\.qq\.com/webview/pingd\?dm=c\.pc\.qq\.com&pvi=\d+&si=s\d+&url=/ios\.html\?url%3d(http.*)%26level.*%26level.* $1 307
+
+[Script]
+# 请求阶段只检查头部，不读取正文。
+Kelee-12306 = type=http-request, pattern=^https://mobile\.12306\.cn/otsmobile/app/mgs/mgw\.htm$, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/12306_remove_ads.js, timeout=5
+Kelee-Umetrip = type=http-request, pattern=(?i)^https?://(?:114\.115\.217\.129|home\.umetrip\.com)/gateway/api/umetrip/native$, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/Umetrip_remove_ads.js, timeout=5
+# Protobuf 必须以二进制模式处理；参数直接传 true/false，不额外嵌入引号。
+Kelee-TiebaProto = type=http-response, pattern=(?i)^https?://tiebac?\.baidu\.com/c/(?:f/excellent/personalized|f/frs/page|b/ad/adBid|f/ad/getFeedAd|f/pb/page|f/frs/generalTabList)\?(?:[^#?&]+&)*cmd=\d+&format=protobuf, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/tieba-proto.js, requires-body=true, binary-body-mode=true, timeout=10, argument=per_filter_video_thread={{{Tieba_FilterVideo}}}
+Kelee-NetEaseGodlike = type=http-response, pattern=(?i)^https://app-conf\.ds\.163\.com/v1/app/base/conf/static/start-config\?(?:[^#?&]+&)*os=ios, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/NetEaseGodlike_remove_ads.js, requires-body=true, timeout=10
+Kelee-JD = type=http-response, pattern=(?i)^https://api\.m\.jd\.com/client\.action\?(?:[^#?&]+&)*functionId=(?:deliverLayer|getTabHomeInfo|myOrderInfo|orderTrackBusiness|personinfoBusiness|start|welcomeHome), script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/JD_remove_ads.js, requires-body=true, timeout=10
+Kelee-PinDuoDuo = type=http-response, pattern=(?i)^https://m\.pinduoduo\.net/mdkd/package\?(?:[^#?&]+&)*from_app_scan, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/PinDuoDuo_remove_ads.js, requires-body=true, timeout=10
+# 小红书按同一脚本合并互斥 URL，避免重复的脚本名覆盖。
+Kelee-RedPaper = type=http-response, pattern=(?i)^https://(?:(?:edith\.xiaohongshu\.com/api/sns/(?:v1/(?:note/(?:imagefeed|live_photo/save)|system/service/ui/config\?|system_service/config\?|interaction/comment/video/download)|v2/(?:system_service/splash_config|note/widgets|user/followings/followfeed|note/feed)|v3/note/videofeed|v4/followfeed\?|v5/(?:recommend/user/follow_recommend\?|note/comment/list)))|(?:(?:edith|rec)\.xiaohongshu\.com/api/sns/v6/homefeed\?)|(?:(?:edith|so)\.xiaohongshu\.com/api/sns/v10/search/notes\?)|(?:(?:edith|rec|www)\.xiaohongshu\.com/api/sns/(?:v4/note/videofeed|v10/note/video/save))), script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/RedPaper_remove_ads.js, requires-body=true, timeout=10
+Kelee-Taobao = type=http-response, pattern=(?i)^https://(?:guide-acs\.m\.taobao\.com/gw/mtop\.taobao\.(?:cloudvideo\.video\.query|wireless\.home\.splash\.awesome\.get)|poplayer\.template\.alibaba\.com/\w+\.json), script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/Taobao_remove_ads.js, requires-body=true, timeout=10
+Kelee-Caixin = type=http-response, pattern=(?i)^https://(?:entities\.caixin\.com/api/dataplus/columns|gateway\.caixin\.com/api/(?:app-api/(?:caixinapp/appinfo|search/getkeyword)|app-content/fm/index/list\?)|gg\.caixin\.com/s\?(?:[^#?&]+&)*z=caixin&op=\d|mappsv5\.caixin\.com/articlev5/\d+/\d+\.json$|mapps?v5\.caixin\.com/(?:channelv5/list|/?index_page_v5/)\w+), script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/CaixinMedia_remove_ads.js, requires-body=true, timeout=10
+Kelee-BaiduHome = type=http-response, pattern="(?i)^https?://(?:www|m)\.baidu\.com/?(?:$|\?(?:[^#?&]+&)*from=\w{8,9})", script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/BaiduSearchHomePage_remove_ads.js, requires-body=true, timeout=10
+Kelee-WeixinLinks = type=http-response, pattern=(?i)^https://(?:weixin110\.qq|security\.wechat)\.com/cgi-bin/mmspamsupport-bin/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee/js/Weixin_external_links_unlock.js, requires-body=true, timeout=15
+
+[MITM]
+# 逐项合并原插件列表；补齐彩云 wrapper、拼多多资源 CDN、yangkeduo 等遗漏域名。
+hostname = %APPEND% api.flydigi.com, app.10099.com.cn, 114.115.217.129, 3pp.starbucks.com.cn, aag.enmonster.com, acs-m.freshippo.com, acs.m.goofish.com, acs.m.taobao.com, activity.yonghuivip.com, ad.12306.cn, ad.maoyan.com, ad.xiaotucc.com, ads.ishansong.com, alittle-tea.oss-cn-shanghai.aliyuncs.com, api-access.pangolin-sdk-toutiao*.com, api-app.dc-cn.cn.ecouser.net, api-evone.echargenet.com, api-fouth-mem.huazhu.com, api-marketing.zhinengxiyifang.cn, api-mifit*.huami.com, api-overmind.youdao.com, api-shoulei-ssl.xunlei.com, api.ahmobile.cn, api.boohee.com, api.caiyunapp.com, api.coolapk.com, api.fenxianglife.com, api.gotokeep.com, api.hellobike.com, api.hengdianfilm.com, api.hongyibo.com.cn, api.jr.mi.com, api.kuaidihelp.com, api.kurobbs.com, api.m.jd.com, api.m.mi.com, api.maoyan.com, api.mcd.cn, api.pinduoduo.com, api.prod.dj.mstand.cn, api.songguo7.com, api.szbgcx.cn, api.udache.com, api.wfdata.club, api.xiachufang.com, api.xiangji.qq.com, api.xiaoheihe.cn, api.yangkeduo.com, api.yonghuivip.com, api.zcool.com.cn, api.zuihuimai.com, apiproxy.zuche.com, apis.alenable.com, apiv2.douyucdn.cn, apiwz.midukanshu.com, app-conf.ds.163.com, app.95504.net, app.homeinns.com, app.zhoudamozi.com, applets.jtexpress.com.cn, appuser-static.huolala.cn, as.xiaojukeji.com, aserver-evone.echargenet.com, biz.cyapi.cn, bohe.sfo-tx-shanghai-01.saas.sensorsdata.cn, c.pc.qq.com, capi.lkcoffee.com, capis*.didapinche.com, cappapi.alittle-tea.com, cbd-gateway-service-applets.hualala.com, ccmsupport-sz.tenpay.com, ccsp-egmas.sf-express.com, cdke.youdao.com, cdn-w.caiyunapp.com, cdn.cmgadx.com, cdn.web.chelaile.net.cn, cgi.connect.qq.com, chong.qq.com, ci.xiaohongshu.com, client-api-v2.oray.com, client.app.coc.10086.cn, cmds.omesoft.com, cn-acs.m.cainiao.com, coco-com.e.verystar.net, color.jddj.com, common.diditaxi.com.cn, conf-darwin.xycdn.com, conf-m-ssl.xunlei.com, conf.diditaxi.com.cn, creditcardapp.bankcomm.com, customer-app.sto.cn, d.socdm.com, daijia.kuaidadi.com, dat.ruanmei.com, data.3g.yy.com, dict.youdao.com, dock.tenchii.com, dsp.fcbox.com, e*.caixin.com, e2e-mtop.cainiao.com, ecard.shenzhentong.com, edith.xiaohongshu.com, ether-pack.pangolin-sdk-toutiao.com, file.dian.so, flow.dmall.com, forecast.sina.cn, freight.xiaojukeji.com, fscdn.zto.com, g*.caixin.com, g-acs.m.goofish.com, gl-cn-api.ecovacs.cn, god.gameyw.netease.com, gromore.pangolin-sdk-toutiao.com, guide-acs.m.taobao.com, gw-passenger-wap.01zhuanche.com, gw.alicdn.com, gw.chuangkit.com, h5.qzone.qq.com, hdgateway.zto.com, heic.alicdn.com, hfapp-service.qweather.net, home.mi.com, home.umetrip.com, htwkop-st.xiaojukeji.com, htwkop.xiaojukeji.com, hweb-hotel.huazhu.com, hweb-manager.huazhu.com, images.pinduoduo.com, images.qmai.cn, img.allahall.com, img.dailmo.com, iyes.youku.com, jia.360.cn, lanfanapp.com, lawsonapi.yorentown.com, lego.boohee.com, lfd?-analytics.bytescm.com, lfd?-cdn-tos.bytescm.com, longquan-mtop.cainiao.com, m*.caixin.com, m.baidu.com, m.client.10010.com, m.ctrip.com, m.pinduoduo.net, m.qianbao.qq.com, magev6.if.qidian.com, manga.bilibili.com, mapi.xiaotucc.com, mbmodule-openapi.paas.cmbchina.com, mcsp.cloudpnr.com, member.lxjchina.com.cn, mercury-gateway.ixiaochuan.cn, miniapp.sexytea2013.com, minicap.caocaokeji.cn, minifm.maxxipoint.com, minipro.95504.net, miniprogram.ishansong.com, mkt-gateway.tuhu.cn, mob.mddcloud.com.cn, mobads-pre-config.cdn.bcebos.com, mobile-api.imlaidian.com, mobile.12306.cn, mp.weixin.qq.com, mxsa.mxbc.net, napi.ithome.com, nbcps-mtop.cainiao.com, ne.gdsz.sinopec.com, netflow-mtop.cainiao.com, newton.gumingnc.com, p.kuaidi100.com, p0.pipi.cn, pan.baidu.com, passenger.t3go.cn, passengerapi.saicmobility.com, personal-center.yy.com, pfile.pddpic.com, pingtas.qq.com, plt.yorentown.com, poi.map.xiaojukeji.com, poplayer.template.alibaba.com, qadx.qinlinad.com, qapi.huolala.cn, qiye.gaoding.com, r2.gzyct.com, rec.xiaohongshu.com, res-pub.huazhu.com, res.hongyibo.com.cn, res.pizzahut.com.cn, res.xiaojukeji.com, rms.meituan.com, rtbapi.douyucdn.cn, s.jiediankeji.com, saas-ad.cloudpnr.com, saas.hpplay.cn, sauron-report.yonghuivip.com, sdk1xyajs.data.kuiniuca.com, security.wechat.com, sfd?-fe-tos.pglstatp-toutiao.com, sfo.mddcloud.com.cn, shealthyapi.senssun.com, shopapi.io.mi.com, smarket.dian.so, so.xiaohongshu.com, starplucker.cyapi.cn, status.boohee.com, sto-customer-app.oss-cn-shanghai.aliyuncs.com, supplier-api.imdada.cn, suyun-guest.daojia.com, switch.jumpvg.com, t-dsp.pinduoduo.com, tab.yy.com, tbgapplet.carlsberg.asia, tianshu.qq.com, tieba.baidu.com, tiebac.baidu.com, tm-api.pin-dao.cn, toblog.ctobsnssdk.com, tower.ubixioe.com, tqt.weibo.cn, tqtdata.weathercn.com, ucmp-static.sf-express.com, ucmp.sf-express.com, umerp.umetrip.com, ump.ems.com.cn, us.l.qq.com, venus.douyucdn.cn, video-dsp.pddpic.com, vod-movie.maoyan.com, watch.iot.mi.com, webapi.qmai.cn, webchatapp.fcbox.com, wechat-api.i-xiaoma.com.cn, weixin110.qq.com, wrapper.cyapi.cn, www.baidu.com, www.deppon.com, www.xiaohongshu.com, wx.10086.cn, wx.bthhotels.com, wx.maoyan.com, wx.online-cmcc.cn, wxapp.bestwehotel.com, wxproj.seeyouyima.com, wxs-weixin.sd.zhumanggroup.com, ywab.reader.qq.com, yyapp-act-entrance.yy.com, yyapp-fastnet.yy.com, yyapp-idx.yy.com
