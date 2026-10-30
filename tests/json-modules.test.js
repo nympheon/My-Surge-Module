@@ -171,3 +171,24 @@ test('Applet bus healthy array payloads retain exact toggle purification',()=>{
  const body='[{"Ad":1,"Ad_ab":1,"id":9007199254740993123456789}]';
  assert.equal(script('Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),'[{"Ad":0,"Ad_ab":0,"id":9007199254740993123456789}]');
 });
+// Exact HTML attribute context must protect article prose and unrelated attribute values.
+for (const [label, content] of [
+ ['prefixed attributes', '<div data-unit-id="adunit-ab12">keep</div>'],
+ ['plain prose', 'Documentation: unit-id="adunit-ab12" is an example.'],
+ ['unclosed raw text', '<script>const example = `<ad unit-id="adunit-ab12"></ad>`;'],
+ ['HTML comments', '<!-- <ad unit-id="adunit-ab12"></ad> -->'],
+ ['raw text elements', "<script>var example='<ad unit-id=\"adunit-ab12\"></ad>';</script>"],
+ ['quoted attribute prose', '<ad title=\'Documentation: unit-id="adunit-ab12" is an example.\' data-unit-id="adunit-cd34">keep</ad>']
+]) {
+ test(`Applet HTML context preserves ${label} and raw numeric tokens`, () => {
+  const body='{"content":'+JSON.stringify(content)+',"id":9007199254740993123456789,"decimal":0.1234567890123456789012345}';
+  assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),body);
+ });
+}
+test('Applet HTML context changes only a real exact attribute among quoted examples',()=>{
+ const content='<ad title=\'Example: <ad unit-id="adunit-ab12">\'\n data-unit-id="adunit-cd34" unit-id = \'adunit-ef56\'></ad>';
+ const want='<ad title=\'Example: <ad unit-id="adunit-ab12">\'\n data-unit-id="adunit-cd34" unit-id = \'\'></ad>';
+ const suffix=',"id":9007199254740993123456789,"decimal":0.1234567890123456789012345}';
+ const body='{"content":'+JSON.stringify(content)+suffix;
+ assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),'{"content":'+JSON.stringify(want)+suffix);
+});
