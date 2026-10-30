@@ -1,0 +1,146 @@
+#!name=kelee-HTTPDNS
+#!desc=拦截应用内置 HTTPDNS，保留原规则中的嘀嗒出行例外；使用 Surge 原生规则和 Map Local。
+#!author=可莉、VirgilClyne；Surge 手工整理
+
+# 原始来源：https://kelee.one/Tool/Loon/Lpx/Block_HTTPDNS.lpx
+# 核对镜像：bunizao/Mirrored，a8e1cbf97a2298a5f64412fcd1c6deb11d5de4f6
+# 兼容 Surge Mac / iPhone / iPad。与去广告集合一同启用。
+
+[Rule]
+# 嘀嗒出行原有例外：只放行这两个 HTTP 接口与对应 User-Agent 的组合。
+AND,((URL-REGEX,^http://119\.(?:29\.29|28\.28)\.90/d\?),(USER-AGENT,%E5%98%80%E5%97%92%E5%87%BA%E8%A1%8C*)),DIRECT
+
+# 通用 HTTPDNS 域名与客户端标识；下方只保留未被关键词覆盖的精确域名。
+DOMAIN-KEYWORD,httpdns,REJECT
+DOMAIN-KEYWORD,httpsdns,REJECT
+USER-AGENT,httpdns*,REJECT
+USER-AGENT,httpsdns*,REJECT
+USER-AGENT,Httpdns*,REJECT
+USER-AGENT,Httpsdns*,REJECT
+
+# 通过 IP 地址直接发起的 HTTPDNS 请求。
+URL-REGEX,^http://((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/v?[0-9]+)?/(?:sign_)?(?:(?:d|ss)[46]?|resolve)\?,REJECT
+URL-REGEX,^http://\[[0-9a-fA-F:]+\](?:/v?[0-9]+)?/(?:sign_)?(?:(?:d|ss)[46]?|resolve)\?,REJECT
+URL-REGEX,^http://103\.44\.58\.64/md\?,REJECT
+URL-REGEX,^http://cdn\.wup\.huya\.com/launch/queryHttpDns,REJECT
+# 保留原插件对喜马拉雅此接口的处理范围。
+URL-REGEX,^http://xmc\.ximalaya\.com/xmlymain-login-web/login/,REJECT
+URL-REGEX,^http://(?:amdc\.m\.taobao\.com|47\.246\.103\.(?:9|10)|59\.82\.113\.(?:10|219))/amdc/mobileDispatch,REJECT
+URL-REGEX,^http://103\.37\.155\.60/fetch,REJECT
+URL-REGEX,^http://api\.weibo\.cn/(?:\d+/)?httpdns/config,REJECT
+URL-REGEX,^http://((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/v\d/resolv\?,REJECT
+URL-REGEX,^http://((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):\d+/httpdns/,REJECT
+URL-REGEX,^http://\[[0-9a-fA-F:]+\]:\d+/httpdns/,REJECT
+
+# 各应用未使用 httpdns / httpsdns 命名的解析、调度服务。
+DOMAIN,dns2.q2cdn.com,REJECT
+DOMAIN,dns.weixin.qq.com,REJECT
+DOMAIN,dns.weixin.qq.com.cn,REJECT
+DOMAIN,aedns.weixin.qq.com,REJECT
+DOMAIN,resolver.msg.xiaomi.net,REJECT
+DOMAIN,amdc.alipay.com,REJECT
+DOMAIN,ucdc.upaas.quark.cn,REJECT
+DOMAIN,xpis-xcdn.youku.com,REJECT
+DOMAIN,pre-xpis-xcdn.youku.com,REJECT
+DOMAIN,xpis-tel-xcdn.youku.com,REJECT
+DOMAIN,xpis-mob-xcdn.youku.com,REJECT
+DOMAIN,doh.ptqy.gitv.tv,REJECT
+DOMAIN,dns.iqiyi.com,REJECT
+DOMAIN,doh.iqiyi.com,REJECT
+DOMAIN,dns.qiyipic.iqiyi.com,REJECT
+DOMAIN,dns.jd.com,REJECT
+DOMAIN,dotserver.douyucdn.cn,REJECT
+DOMAIN,hdns.ksyun.com,REJECT
+DOMAIN,cdndns.kwd.inkuai.com,REJECT
+DOMAIN,hdns.k-dyn.com,REJECT
+DOMAIN,apidns.kwd.inkuai.com,REJECT
+DOMAIN,apidns-js.kwd.inkuai.com,REJECT
+DOMAIN,dns.weibo.cn,REJECT
+DOMAIN,hd.xiaojukeji.com,REJECT
+DOMAIN,serveraddr.service.kugou.com,REJECT
+DOMAIN,twns.p2ptun.qq.com,REJECT
+DOMAIN,tp2p.kg.qq.com,REJECT
+
+# 原插件的 IPv4 / IPv6 地址列表；no-resolve 避免额外触发 DNS 查询。
+IP-CIDR,39.156.140.30/32,REJECT,no-resolve
+IP-CIDR,39.156.140.47/32,REJECT,no-resolve
+IP-CIDR,39.156.140.245/32,REJECT,no-resolve
+IP-CIDR,42.81.232.18/32,REJECT,no-resolve
+IP-CIDR,42.187.182.106/32,REJECT,no-resolve
+IP-CIDR,42.187.182.123/32,REJECT,no-resolve
+IP-CIDR,42.187.184.154/32,REJECT,no-resolve
+IP-CIDR,43.130.30.237/32,REJECT,no-resolve
+IP-CIDR,43.130.30.240/32,REJECT,no-resolve
+IP-CIDR,43.137.153.151/32,REJECT,no-resolve
+IP-CIDR,43.137.159.31/32,REJECT,no-resolve
+IP-CIDR,43.152.112.101/32,REJECT,no-resolve
+IP-CIDR,43.153.248.120/32,REJECT,no-resolve
+IP-CIDR,60.28.172.100/32,REJECT,no-resolve
+IP-CIDR,61.151.231.157/32,REJECT,no-resolve
+IP-CIDR,101.32.104.104/32,REJECT,no-resolve
+IP-CIDR,106.39.206.21/32,REJECT,no-resolve
+IP-CIDR,106.39.206.25/32,REJECT,no-resolve
+IP-CIDR,106.39.206.70/32,REJECT,no-resolve
+IP-CIDR,111.31.201.194/32,REJECT,no-resolve
+IP-CIDR,111.31.241.76/32,REJECT,no-resolve
+IP-CIDR,111.31.241.140/32,REJECT,no-resolve
+IP-CIDR,111.206.147.156/32,REJECT,no-resolve
+IP-CIDR,111.206.147.210/32,REJECT,no-resolve
+IP-CIDR,111.206.148.27/32,REJECT,no-resolve
+IP-CIDR,116.128.177.249/32,REJECT,no-resolve
+IP-CIDR,116.130.224.150/32,REJECT,no-resolve
+IP-CIDR,116.130.224.205/32,REJECT,no-resolve
+IP-CIDR,117.185.247.73/32,REJECT,no-resolve
+IP-CIDR,123.151.48.171/32,REJECT,no-resolve
+IP-CIDR,123.151.48.193/32,REJECT,no-resolve
+IP-CIDR,123.151.48.208/32,REJECT,no-resolve
+IP-CIDR,123.151.54.50/32,REJECT,no-resolve
+IP-CIDR,180.153.202.85/32,REJECT,no-resolve
+IP-CIDR,183.192.196.31/32,REJECT,no-resolve
+IP-CIDR,203.205.129.102/32,REJECT,no-resolve
+IP-CIDR,203.205.234.132/32,REJECT,no-resolve
+IP-CIDR,220.196.159.73/32,REJECT,no-resolve
+IP-CIDR,203.107.1.0/24,REJECT,no-resolve
+IP-CIDR,186.76.76.200/32,REJECT,no-resolve
+IP-CIDR,180.76.76.200/32,REJECT,no-resolve
+IP-CIDR,101.124.19.122/32,REJECT,no-resolve
+IP-CIDR,103.224.222.208/32,REJECT,no-resolve
+IP-CIDR,119.29.29.98/32,REJECT,no-resolve
+IP-CIDR,119.29.29.99/32,REJECT,no-resolve
+IP-CIDR,59.111.239.61/32,REJECT,no-resolve
+IP-CIDR,59.111.239.62/32,REJECT,no-resolve
+IP-CIDR,115.236.121.51/32,REJECT,no-resolve
+IP-CIDR,115.236.121.195/32,REJECT,no-resolve
+IP-CIDR,39.97.130.51/32,REJECT,no-resolve
+IP-CIDR,39.97.128.148/32,REJECT,no-resolve
+IP-CIDR,103.41.167.237/32,REJECT,no-resolve
+IP-CIDR,118.89.204.198/32,REJECT,no-resolve
+IP-CIDR,182.61.194.7/32,REJECT,no-resolve
+IP-CIDR,116.85.2.41/32,REJECT,no-resolve
+IP-CIDR,116.85.3.39/32,REJECT,no-resolve
+IP-CIDR,123.207.209.142/32,REJECT,no-resolve
+IP-CIDR,139.199.240.84/32,REJECT,no-resolve
+IP-CIDR,81.71.61.216/32,REJECT,no-resolve
+IP-CIDR6,240e:928:1400:10::25/128,REJECT,no-resolve
+IP-CIDR6,2402:4e00:8030:1::17/128,REJECT,no-resolve
+IP-CIDR6,2402:4e00:1900:1700:0:9554:1ad9:c3a/128,REJECT,no-resolve
+IP-CIDR6,2408:8711:10:10::20/128,REJECT,no-resolve
+IP-CIDR6,2409:8702:4860:10::4d/128,REJECT,no-resolve
+IP-CIDR6,2402:db40:5100:1011::5/128,REJECT,no-resolve
+IP-CIDR6,2402:4e00:1200:ed00:0:9089:6dac:96b6/128,REJECT,no-resolve
+IP-CIDR6,240c:409f:1000::/128,REJECT,no-resolve
+
+[Map Local]
+# 网易邮箱大师：返回空 JSON。
+(?i)^https?://appconf\.mail\.163\.com/mailmaster/api/http/urlConfig\.do$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 虎牙与喜马拉雅：保留原插件的 404 响应。
+(?i)^https?://cdn\.wup\.huya\.com/monitor/monitor\.jsp data-type=text data="" status-code=404
+(?i)^https://gslbali\.ximalaya\.com/linkeye-cloud/httpdns/ data-type=text data="" status-code=404
+# 健康160、UC 与他趣：返回空 JSON。
+(?i)^https://msglb\.91160\.com/msg/outer/broker/get$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://ucdc\d?-upaas\.uc\.cn/api/v\d/dns_query\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+(?i)^https://gw-cn\.jiaoliuqu\.com/taqu-im-broadcast-srv/v\d/Comet/get\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+# 仅追加需要改写的 HTTPS 主机；补齐原镜像遗漏的虎牙、喜马拉雅及 UC 主机。
+hostname = %APPEND% appconf.mail.163.com, cdn.wup.huya.com, gslbali.ximalaya.com, msglb.91160.com, ucdc-upaas.uc.cn, ucdc0-upaas.uc.cn, ucdc1-upaas.uc.cn, ucdc2-upaas.uc.cn, ucdc3-upaas.uc.cn, ucdc4-upaas.uc.cn, ucdc5-upaas.uc.cn, ucdc6-upaas.uc.cn, ucdc7-upaas.uc.cn, ucdc8-upaas.uc.cn, ucdc9-upaas.uc.cn, gw-cn.jiaoliuqu.com
