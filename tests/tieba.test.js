@@ -5,9 +5,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
-const { root, runScript, sourceActiveLines, parseModule, runJq, validateSurge } = require('./helpers');
+const { root, runScript, sourceActiveLines, parseSource: parseModule, runJq, validateSurge } = require('./helpers');
 const { decode, original } = require('./helpers/tieba-oracle');
-const script = 'TieBaAds/js/tieba-proto.js';
+const script = 'MoyuAds/js/tieba-proto.js';
 // Hand-built wire fixtures: no production/schema generator builds expectations.
 const join = (...parts) => Uint8Array.from(parts.flatMap(p => Array.from(p)));
 function v(n) { const out=[]; do {out.push(n % 128 + (n >= 128 ? 128 : 0)); n=Math.floor(n/128);} while(n); return out; }
@@ -124,9 +124,9 @@ test('module keeps all eight predicates, native response semantics, ownership an
  assert.deepEqual(module['Map Local'][0].tokens.slice(1),['data-type=text','data=""']);
  const opts=module.Script[0].options;
  assert.equal(opts['binary-body-mode'],'true'); assert.equal(opts['requires-body'],'true');assert.equal(opts['max-size'],'1048576');assert.equal(opts.timeout,'5');
- assert.equal(opts['script-path'],'https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/TieBaAds/js/tieba-proto.js');
- assert.equal(module.MITM[0].text,'hostname = %APPEND% tieba.baidu.com, tiebac.baidu.com');
- assert.match(validateSurge(['TieBaAds']),/OK|success/i);
+ assert.equal(opts['script-path'],'https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/tieba-proto.js');
+ assert.ok(module.MITM[0].text.endsWith(', tieba.baidu.com, tiebac.baidu.com'));
+ assert.match(validateSurge(['MoyuAds']),/OK|success/i);
 });
 const jsonFixtures = {
  S0022:{data:{discover_list:[1,2],keep:9},keep:8},
@@ -189,8 +189,8 @@ test('personalized object argument preserves the original explicit video filter'
  const input=data(msg(2,video),msg(2,unknown));
  assert.deepEqual(run(input,'excellent/personalized','1',{$argument:{per_filter_video_thread:1}}).body,data(msg(2,unknown)));
 });
-test('all six implemented modules coexist in the native parser',()=>{
- assert.match(validateSurge(['Applet','BiliBiliComicsAds','CheLaiLeAds','GoofishAds','MoJiWeatherAds','TieBaAds']),/OK|success/i);
+test('merged binary and text rules coexist in the actual module',()=>{
+ assert.match(validateSurge(['MoyuAds']),/OK|success/i);
 });
 check('later empty activityhead merges without resetting earlier isAd=true','frs/page','1',
  join(data(msg(23,scalar(13,1),unknown)),data(msg(23))),join(data(),data()),'FrsPageResIdl');

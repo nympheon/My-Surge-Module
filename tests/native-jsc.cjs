@@ -42,8 +42,7 @@ function main() {
     const result = replayFixtures(fixtures);
     // Discovery from actual module files prevents an accidentally untested owned script.
     const {parseModule} = require('./helpers');
-    const manifest = require('../references/moyu-independent/manifest.json');
-    const required = manifest.modules.flatMap(module => (parseModule(module.name).Script || []).map(entry => new URL(entry.options['script-path']).pathname.split('/main/')[1]));
+    const required = (parseModule('MoyuAds').Script || []).map(entry => new URL(entry.options['script-path']).pathname.split('/main/')[1]);
     for (const script of required) assert.ok(result.scripts.includes(script), `No behavioral fixture captured for ${script}`);
     console.log(`PASS native JavaScriptCore: ${result.count} captured behavioral calls across ${result.scripts.length} owned scripts`);
     result.scripts.forEach(script => console.log(`  ${script}: ${fixtures.filter(f => f.path === script).length} calls`));

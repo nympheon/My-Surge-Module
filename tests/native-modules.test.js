@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { root, parseModule, sourceActiveLines, runJq, runScript, validateSurge } = require('./helpers');
+const { root, parseSource: parseModule, sourceActiveLines, runJq, runScript, validateSurge } = require('./helpers');
 const names = ['BiliBiliComicsAds', 'GoofishAds', 'MoJiWeatherAds'];
 // A wrong endpoint, wrong filter branch, dropped setter or lost sibling must break these fixtures.
 // The frozen upstream jq is an independent behavioral oracle; literal checks expose its key intent.
@@ -92,8 +92,8 @@ test('Goofish AMDC answers matching case-insensitive headers at request phase', 
   assert.equal(entry.options.type, 'http-request');
   assert.equal(entry.options['requires-body'], undefined);
   assert.equal(entry.options.timeout, '5');
-  assert.equal(entry.options['script-path'], 'https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/GoofishAds/js/amdc.js');
-  const script = 'GoofishAds/js/amdc.js';
+  assert.equal(entry.options['script-path'], 'https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/amdc.js');
+  const script = 'MoyuAds/js/amdc.js';
   for (const ua of ['AMap','Cainiao','%E9%97%B2%E9%B1%BC','%E9%A3%9E%E7%8C%AA%E6%97%85%E8%A1%8C','%E5%96%B5%E8%A1%97','%E5%A4%A9%E7%8C%AB','Alibaba','MovieApp','Hema4iPhone','Moon','DMPortal']) {
     assert.deepEqual(runScript(script, {$request:{headers:{'uSeR-AgEnT':ua}}}), {response:{status:200,headers:{'Content-Type':'text/plain; charset=utf-8'},body:'ddgksf2013'}});
   }
@@ -107,14 +107,14 @@ test('owned script runs in native macOS JavaScriptCore', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'surge-jsc-'));
   try {
     const filename = path.join(directory, 'amdc-test.js');
-    fs.writeFileSync(filename, 'var $request={headers:{"USER-AGENT":"Cainiao"}}; var count=0; function $done(v){count++; if(v.response.body!=="ddgksf2013")throw new Error("wrong body");}\n' + fs.readFileSync(path.join(root,'GoofishAds/js/amdc.js'),'utf8') + '\nif(count!==1)throw new Error("done count"); print("PASS");');
+    fs.writeFileSync(filename, 'var $request={headers:{"USER-AGENT":"Cainiao"}}; var count=0; function $done(v){count++; if(v.response.body!=="ddgksf2013")throw new Error("wrong body");}\n' + fs.readFileSync(path.join(root,'MoyuAds/js/amdc.js'),'utf8') + '\nif(count!==1)throw new Error("done count"); print("PASS");');
     const result = spawnSync('/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc', [filename], {encoding:'utf8'});
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /PASS/);
   } finally {fs.rmSync(directory,{recursive:true,force:true});}
 });
-test('three modules coexist in a complete config accepted by native Surge', () => {
-  assert.match(validateSurge(names), /OK|valid|success|passed/i);
+test('merged native rules parse in a complete config accepted by Surge', () => {
+  assert.match(validateSurge(['MoyuAds']), /OK|valid|success|passed/i);
 });
 // Dropping a record from a newly changed schema is a data-loss bug, even on a known endpoint.
 const unknownCollections = [
@@ -139,17 +139,17 @@ test('owned native script URLs resolve locally and require no runtime loader', (
   for (const name of names) {
     const sections = parseModule(name);
     for (const entry of sections.Script || []) {
-      const prefix = `https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/${name}/js/`;
+      const prefix = `https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/`;
       assert.ok(entry.options['script-path'].startsWith(prefix));
       const filename = entry.options['script-path'].slice(prefix.length);
       assert.ok(!filename.includes('/') && filename.endsWith('.js'));
-      assert.ok(fs.statSync(path.join(root,name,'js',filename)).isFile());
+      assert.ok(fs.statSync(path.join(root,'MoyuAds','js',filename)).isFile());
       assert.equal(entry.options.timeout,'5');
       if (entry.options['requires-body'] === 'true') assert.equal(entry.options['max-size'],'1048576');
     }
     assert.ok(sections.MITM[0].text.startsWith('hostname = %APPEND% '));
     assert.ok(!sections.MITM[0].text.split(/[, ]+/).includes('*'));
-    assert.match(validateSurge([name]), /OK/);
+    assert.match(validateSurge(['MoyuAds']), /OK/);
   }
 });
 test('Goofish search discovery and shade survive the overlapping broad search predicate', () => {

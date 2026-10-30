@@ -1,6 +1,8 @@
+> 合并模块：本来源由 `../MoyuAds.sgmodule` 的对应 `# @source` 分组实现，运行脚本统一位于 `../js/`。历史独立模块描述保留作审计语境；原八个独立入口已替换为一个 MoyuAds 合集。
+
 # Amap manual port audit
 
-Frozen authority: `references/moyu-independent/AmapAds.conf` (ddgksf2013, V1.0.28) and `scripts/amap.js`, manifest SHA-256. All 19 predicates retain source bytes. Decoded branch map: [docs/audits/amap.md](../docs/audits/amap.md). No converter or obfuscated code is shipped.
+Frozen authority: `references/moyu-independent/AmapAds.conf` (ddgksf2013, V1.0.28) and `scripts/amap.js`, manifest SHA-256. All 19 predicates retain source bytes. Decoded branch map: [docs/audits/amap.md](../../docs/audits/amap.md). No converter or obfuscated code is shipped.
 
 | Source | Owned action | Full selected behavior |
 |---|---|---|
@@ -28,14 +30,14 @@ The nine jq actions execute real jq and match frozen JS on complete healthy fixt
 
 Explicit error/errorMessage payloads and status="0" with infocode pass through before cleanup. This is a bounded recognizable failure guard, not a claim that all private endpoint error contracts are known. Arbitrary nonzero code is not failure. Native jq retains non-target unsafe integer and decimal tokens in actual installed jq fixtures, avoiding JSON.parse/stringify precision loss. Malformed JSON is skipped by Surge native jq. No source text was rewritten to approximate JSON.
 
-AMDC is an independent copy of Task 1's reviewed script: case-insensitive header lookup, unchanged case-sensitive UA value regex, body-free http-request response 200 text ddgksf2013 or empty result. Source only used response-stage interception; moving to request-stage preserves selected response while avoiding the remote request. One done, timeout=5. The four reject-dict Map Local responses explicitly set Content-Type:application/json with body {}, rather than inheriting text/plain; empty reject-200 responses retain text/plain and tiny-gif uses image/gif. Native Body Rewrite uses Surge's managed limits (1MB iOS, 10MB Mac); it has no script max-size option.
+AMDC uses the same byte-identical reviewed script, now shared within MoyuAds: case-insensitive header lookup, unchanged case-sensitive UA value regex, body-free http-request response 200 text ddgksf2013 or empty result. Source only used response-stage interception; moving to request-stage preserves selected response while avoiding the remote request. One done, timeout=5. The four reject-dict Map Local responses explicitly set Content-Type:application/json with body {}, rather than inheriting text/plain; empty reject-200 responses retain text/plain and tiny-gif uses image/gif. Native Body Rewrite uses Surge's managed limits (1MB iOS, 10MB Mac); it has no script max-size option.
 
 Source MITM list is unchanged, %APPEND% only; no global wildcard/CA/relaxed verification. Wider source URL regexes do not imply wider HTTPS interception. No live profile change, iOS run or all-app acceptance occurred. Native syntax: [Body Rewrite](https://manual.nssurge.com/http/body-rewrite.html) and [Map Local](https://manual.nssurge.com/http/map-local.html).
 
 ## 使用与验证边界
 
-[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/AmapAds/AmapAds.sgmodule)。要求 Surge Mac 5.9.0+ / iOS 5.14.0+，启用 HTTP Rewrite、Scripting 和 MITM，并已信任自己的 MITM 证书。脚本归属本模块，无跨模块依赖。
+[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/MoyuAds.sgmodule)。要求 Surge Mac 5.9.0+ / iOS 5.14.0+，启用 HTTP Rewrite、Scripting 和 MITM，并已信任自己的 MITM 证书。脚本统一归属 MoyuAds 合集，无跨模块依赖。
 
 完整保留上游选定净化，包括首页卡片、附近的优惠/场景/商品、我的页、搜索热词、AI/运营配置、天气和推广；因此也会移除部分正常 UI/推荐。保留 optimus-ads.amap.com 直连例外和原 MITM 主机范围。上游 ddgksf2013，来源与逐条对应见本文。
 
-上游建议在挂载前卸载重装；本次没有执行安装/卸载、修改在线配置或证书。已通过本机 jq、原脚本样本差分、原生 Surge 配置检查和 AMDC 测试；未宣称旧版本设备、iOS 或全应用在线验收。模块尚需发布后才能通过上述 main 链接获取最新内容。
+上游建议在挂载前卸载重装；本次没有执行安装/卸载、修改在线配置或证书。已通过本机 jq、原脚本样本差分、原生 Surge 配置检查和 AMDC 测试；未宣称旧版本设备、iOS 或全应用在线验收。合并版使用上面的统一 main 订阅地址。

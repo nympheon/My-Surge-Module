@@ -1,3 +1,5 @@
+> 合并模块：本来源由 `../MoyuAds.sgmodule` 的对应 `# @source` 分组实现，运行脚本统一位于 `../js/`。历史独立模块描述保留作审计语境；原八个独立入口已替换为一个 MoyuAds 合集。
+
 # Applet manual port audit
 
 Authority: frozen `references/moyu-independent/Applet.conf`, `scripts/applet.js` and `scripts/zhangshanggongjiao.js`. ddgksf2013 / Cuttlefish attribution retained. All five predicates are unchanged; repeated identical MITM hosts are deduplicated without adding hosts or a global wildcard.
@@ -32,8 +34,8 @@ All tests are local: actual owned scripts under Node VM and macOS JSC; frozen or
 
 ## 使用与验证边界
 
-[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/Applet/Applet.sgmodule)。要求 Surge Mac 5.9.0+ / iOS 5.14.0+，启用 Rewrite、Scripting、MITM 并信任自己的证书。覆盖上游枚举的特定小程序、便利蜂、顺丰和掌上公交；通用 WordPress URL 只在模块列出的 MITM 主机上解密，不会扩大为全站解密。
+[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/MoyuAds.sgmodule)。要求 Surge Mac 5.9.0+ / iOS 5.14.0+，启用 Rewrite、Scripting、MITM 并信任自己的证书。覆盖上游枚举的特定小程序、便利蜂、顺丰和掌上公交；通用 WordPress URL 只在模块列出的 MITM 主机上解密，不会扩大为全站解密。
 
 完整保留广告控制/隐藏内容相关净化意图，并修复上游文本替换误改后缀键、引号和数字的问题，见本文。不能保证移除微信 5 秒开屏；旧公众号 getappmsgad 规则按要求保留，但不承诺其现时可用性。上游作者 ddgksf2013、Cuttlefish。
 
-脚本为独立可读资源，无外部运行时。已做本地 fixture、精度、原生 Surge/JSC 检查；没有在线证书/配置更改，也没有 iOS 或所有小程序验收。main 链接需发布后才包含这次更新。
+脚本为独立可读资源，无外部运行时。已做本地 fixture、精度、原生 Surge/JSC 检查；没有在线证书/配置更改，也没有 iOS 或所有小程序验收。合并版使用统一的 MoyuAds main 订阅与脚本地址。

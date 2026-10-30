@@ -1,0 +1,13 @@
+# Merge eight selected Moyu modules
+
+The user requests one module replacing the eight separate entries. Preserve complete purification and all existing safeguards; this is packaging of already hand-authored Surge rules, not another upstream conversion or update.
+
+Use `MoyuAds/MoyuAds.sgmodule` with one of each native section. Retain each source's rule bytes and order; change only owned script download paths. Keep the seven Script declarations and their original patterns/stages/options, while the three byte-identical AMDC copies share `MoyuAds/js/amdc.js`. The five owned JS files retain their original bytes. MITM is the exact deduplicated union of the existing hosts, using one `%APPEND%` assignment. Source-group comments disambiguate repeated Sxxxx IDs.
+
+Replace the eight old runtime directories. Preserve their audit notes under `MoyuAds/audits/`. Keep frozen references and all StartUpAds/kelee runtime bytes. Update current documentation and testing paths; do not recreate README files or modify device configuration. Users must remove eight old installed subscriptions and add the new entry; no placeholder aliases or automatic device migration.
+
+Approaches: a native merged module directly meets the request. A loader containing eight subscriptions would retain eight entry points and add a dependency; an additional ninth entry would leave the requested replacement incomplete. The exact folder/name and AMDC file deduplication are implementation choices; original predicates/declaration ordering remain unchanged to avoid broadening matching.
+
+Verify actual merged entries against published commit `74662af52b4a2c581aef34e17cbbb7fe030b06ff`, including original per-section ordering, stages, jq text, source IDs, MITM set and JS bytes. Existing behavior fixtures run against actual merged source groups and actual relocated JS. Check real native Surge and macOS JavaScriptCore and obtain one fresh final review. Latest user steering: only prepare the module locally; leave Surge state and the remote repository untouched. No commit, push or installation in this task. New main resource URLs become usable only after a later authorized publication. iOS/App live behavior remains outside local evidence.
+
+After local preparation and review, the user explicitly requested the repository also retain only one of these eight entries. Publication of the reviewed MoyuAds module and five owned JS is now authorized, including deletion of the old eight runtime directories. Preserve all unrelated modules and keep device/Surge state untouched. Verify the remote commit/tree and all six hosted runtime files after normal fast-forward publication.

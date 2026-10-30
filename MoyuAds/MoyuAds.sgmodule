@@ -1,0 +1,241 @@
+#!name=墨鱼应用净化合集 · Surge 原生版
+#!desc=高德地图、微信小程序、哔哩哔哩漫画、菜鸟、车来了、闲鱼、墨迹天气、百度贴吧；保留完整页面净化；Surge Mac 5.9.0+ / iOS 5.14.0+。
+#!author=nympheon；上游 ddgksf2013、Cuttlefish、app2smile
+#!homepage=https://github.com/nympheon/My-Surge-Module
+#!category=去广告
+#!date=2026-10-31
+# Eight manually ported sources, frozen 2026-10-31; references/moyu-independent/manifest.json.
+# @source identifies the original config; Sxxxx is its physical line, not a global ID.
+# Full purification includes ordinary UI/search/recommendation removals. See audits/.
+
+[Rule]
+# @source AmapAds
+# S0020 | 保留原直连例外
+DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
+# @source GoofishAds
+# S0022 | 广告域名
+DOMAIN-SUFFIX,iyes.youku.com,REJECT
+# @source MoJiWeatherAds
+# S0035 | 开屏广告域名
+DOMAIN-SUFFIX,adlaunch.moji.com,REJECT
+# @source TieBaAds
+# S0019 | 原 IP 规则保留 DNS 解析匹配语义，不添加 no-resolve
+IP-CIDR,180.76.76.200/32,REJECT
+
+[URL Rewrite]
+# @source AmapAds
+# S0044 | 通用广告
+^https?:\/\/.*\.amap\.com\/ws\/asa\/ads_attribution - reject
+# @source CheLaiLeAds
+# S0022 | 我的推广
+^https?:\/\/.*chelaile\.net\.cn\/goocity\/flowPos\/listByPos - reject
+
+[Map Local]
+# @source AmapAds
+# S0024 | 开屏空 200
+^https?:\/\/.*\.amap\.com\/ws\/aos\/alimama\/splash_screen data-type=text data=""
+# S0026 | 首页信息流空字典
+^https?:\/\/.*\.amap\.com\/v\d\/ai_rec\/ data-type=text data="{}" header="Content-Type:application/json"
+# S0032 | 路线规划空字典
+^https?:\/\/.*\.amap\.com\/ws\/faas\/amap-navigation\/card-service-route-plan\? data-type=text data="{}" header="Content-Type:application/json"
+# S0040 | Tip 空 200
+^https?:\/\/.*\.amap\.com\/ws\/boss\/order_web\/\w{8}_information data-type=text data=""
+# S0054 | 搜索场景空字典
+^https?:\/\/.*\.amap\.com\/ws\/shield\/scene\/recommend data-type=text data="{}" header="Content-Type:application/json"
+# S0056 | 透明图片
+^https?:\/\/.*\.amap\.com\/uploadimg\/\w+\.gif data-type=tiny-gif
+# S0058 | 天气空字典
+^https?:\/\/.*\.amap\.com\/ws\/valueadded\/weather data-type=text data="{}" header="Content-Type:application/json"
+# @source Applet
+# S0029 | 便利蜂
+^https?:\/\/api\.blibee\.com\/cvsnotify-api\/cvs\/notify\/app\/banner\/v\d+$ data-type=text data=""
+# S0031 | 顺丰速运
+^https?:\/\/ucmp\.sf-express\.com\/proxy\/operation-platform\/info-flow-adver\/query$ data-type=text data=""
+# @source CainiaoAds
+# S0030 | 通用广告，保留 _home 例外
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.guoguo\.nbnetflow\.ads\.(?!.*_home) data-type=text data=""
+# S0032 | mshow
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.guoguo\.nbnetflow\.ads\.mshow\.cn data-type=text data=""
+# S0034 | 首页底部商品
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.nbcps\.presentation\.fetch\.cn data-type=text data=""
+# S0036 | 底部角标
+^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.app\.home\.v\d+\.bottom\.area data-type=text data=""
+# S0040 | 小程序广告
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.cainiao\.guoguo\.nbnetflow\.ads\. data-type=text data=""
+# S0042 | 小程序商品推广新
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.alimama\.abyss\.unionpage\.get data-type=text data=""
+# S0044 | 小程序商品推广旧
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.cainiao\.adx\.flyad\.getad data-type=text data=""
+# S0046 | 匿名选择
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.cainiao\.nbmensa\.research\.researchservice\.consultmerge data-type=text data=""
+# @source CheLaiLeAds
+# S0024 | 详情页
+^https?:\/\/cdn\.web\.chelaile\.net\.cn\/info-flow\/index\.html data-type=text data=""
+# S0026 | 通用广告
+^https?:\/\/.*chelaile\.net\.cn\/(api\/)?adpub data-type=text data=""
+# S0028 | IP 广告
+^https?:\/\/124\.70\.194\.16\/(ip|adpub) data-type=text data=""
+# S0030 | IP 我的推广
+^https?:\/\/124\.70\.194\.16\/goocity\/flowPos\/listByPos data-type=text data=""
+# S0034 | 公交详情
+^https?:\/\/web\.chelaile\.net\.cn\/api\/operative_position\/infoflow data-type=text data=""
+# S0036 | 跟踪
+^https?:\/\/atrace\.chelaile\.net\.cn\/(wx_preloadAd|adAnalysis) data-type=text data=""
+# @source GoofishAds
+# S0025 | 开屏：原 reject-200 的空 200 文本响应
+^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.*splash\.ads data-type=text data=""
+# S0029 | 通用广告
+^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.idle.ad.expose data-type=text data=""
+# @source MoJiWeatherAds
+# S0023 | 首页浮窗：原 reject-200 的空 200 文本响应
+^https?:\/\/.*api\.moji\.com\/flycard\/flyCard data-type=text data=""
+# S0025 | 首页底部短视频
+^https?:\/\/.*api\.moji\.com\/shortvideo data-type=text data=""
+# S0027 | 商品推广
+^https?:\/\/.*api\.moji\.com\/json\/advertising_goods data-type=text data=""
+# S0029 | 时景发现
+^https?:\/\/.*api\.moji\.com\/forum data-type=text data=""
+# S0031 | 时景关注
+^https?:\/\/.*api\.moji\.com\/user\/dynamic_v\d\/json\/someone_interest data-type=text data=""
+# S0033 | DNS 配置
+^https:\/\/tnc.*zijieapi\.com\/get_domains data-type=text data=""
+# @source TieBaAds
+# S0032 | 原 reject-200：空 200 文本响应
+^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/ad\/getFeedAd data-type=text data=""
+
+[Body Rewrite]
+# @source AmapAds
+# S0030 | 底栏角标
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/message\/notice\/list '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok and (.data|type)=="object" and .data.noticeList!=null and .data.noticeList!=false and .data.noticeList!=0 and .data.noticeList!="" then .data.noticeList=[] else . end) catch $original'
+# S0034 | 运营配置、AI 和角标
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/shield\/frogserver\/aocs\/updatable '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok and (.data|type)=="object" then .data |= with_entries(if .key|test("gd_notch_logo|home_business_position_config|his_input_tip|operation_layer|aiNative|ai_|_ai") then .value={status:1,version:"",value:""} else . end) else . end) catch $original'
+# S0036 | 附近完整净化
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/shield\/search\/nearbyrec_smart '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok and (.data|type)=="object" and ((.data|has("modules")|not) or .data.modules==null or .data.modules==false or .data.modules==0 or .data.modules=="" or ((.data.modules|type)=="array" and all(.data.modules[];type=="string"))) then del(.data.coupon,.data.scene,.data.activity,.data.commodity_rec,.data.operation_activity) | if (.data.modules|type)=="array" then .data.modules |= map(select(.!="coupon" and .!="scene" and .!="activity" and .!="commodity_rec" and .!="operation_activity")) else . end else . end) catch $original'
+# S0038 | 打车资源；保留原 JS falsy 条件
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/promotion-web\/resource '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok and (.data|type)=="object" then .data |= with_entries(if (.key=="icon" or .key=="banner" or .key=="tips" or .key=="popup" or .key=="bubble" or .key=="other") and .value!=null and .value!=false and .value!=0 and .value!="" then .value=[] else . end) else . end) catch $original'
+# S0042 | 首页只保留登录卡、常用位置；Object.values 数字键排序
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/faas\/amap-navigation\/main-page '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); def vals: if type=="array" then . else to_entries|sort_by(if (.key|test("^(0|[1-9][0-9]*)$")) and (.key|tonumber)<4294967295 then [0,(.key|tonumber)] else [1,0] end)|map(.value) end; if ok and (.data|type)=="object" and ((.data.cardList==null or .data.cardList==false or .data.cardList==0 or .data.cardList=="") or ((.data.cardList|type)=="array" or (.data.cardList|type)=="object") and all(.data.cardList[];type=="object" and (.dataType|type)=="string")) then .data |= (if .cardList!=null and .cardList!=false and .cardList!=0 and .cardList!="" then .cardList |= (vals|map(select(.dataType=="LoginCard" or .dataType=="FrequentLocation"))) else . end | if .mapBizList!=null and .mapBizList!=false and .mapBizList!=0 and .mapBizList!="" then .mapBizList=[] else . end | if .business_position!=null and .business_position!=false and .business_position!=0 and .business_position!="" then .business_position=[] else . end | if (.pull3|type)=="object" and .pull3.msgs!=null and .pull3.msgs!=false and .pull3.msgs!=0 and .pull3.msgs!="" then .pull3.msgs=[] else . end) else . end) catch $original'
+# S0046 | 开屏 creative 仅修改第一项；2240150400 为原常量
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/valueadded\/alimama\/splash_screen '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok and (.data|type)=="object" and (.data.ad|type)=="array" and all(.data.ad[];type=="object" and (.set.setting|type)=="object" and (.creative|type)=="array" and (.creative[0]|type)=="object") then .data.ad |= map(.set.setting.display_time=0 | .creative[0].start_time=2240150400 | .creative[0].end_time=2240150400) else . end) catch $original'
+# S0048 | 首页顶部消息
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/msgbox\/pull '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok then (if .msgs!=null and .msgs!=false and .msgs!=0 and .msgs!="" then .msgs=[] else . end) | if (.pull3|type)=="object" and .pull3.msgs!=null and .pull3.msgs!=false and .pull3.msgs!=0 and .pull3.msgs!="" then .pull3.msgs=[] else . end else . end) catch $original'
+# S0050 | 我的页只保留订单与高德推荐卡
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/shield\/dsp\/profile\/index\/nodefaas '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); def vals: if type=="array" then . else to_entries|sort_by(if (.key|test("^(0|[1-9][0-9]*)$")) and (.key|tonumber)<4294967295 then [0,(.key|tonumber)] else [1,0] end)|map(.value) end; if ok and (.data|type)=="object" and ((.data.cardList==null or .data.cardList==false or .data.cardList==0 or .data.cardList=="") or ((.data.cardList|type)=="array" or (.data.cardList|type)=="object") and all(.data.cardList[];type=="object" and (.dataType|type)=="string")) then del(.data.tipData) | if .data.cardList!=null and .data.cardList!=false and .data.cardList!=0 and .data.cardList!="" then .data.cardList |= (vals|map(select(.dataType=="MyOrderCard" or .dataType=="GdRecommendCard"))) else . end else . end) catch $original'
+# S0052 | 搜索热词
+http-response-jq ^https?:\/\/.*\.amap\.com\/ws\/shield\/search\/new_hotword '. as $original | try (def ok: type=="object" and ([.error,.errorMessage]|all(.==null or .==false or .=="")) and ((.status=="0" and has("infocode"))|not); if ok and (.data|type)=="object" and .data.header_hotword!=null and .data.header_hotword!=false and .data.header_hotword!=0 and .data.header_hotword!="" then .data.header_hotword=[] else . end) catch $original'
+
+# @source Applet
+# S0033 | 保留旧公众号规则，非当前可用性保证
+http-response ^(http|https):\/\/mp\.weixin\.qq\.com\/mp\/getappmsgad advertisement ddgksf2013
+# @source BiliBiliComicsAds
+# S0023 | 开屏与活动弹窗
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/ListFlash 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.list | type) == "array" then .data.list=[] | .data.ad_list=[] | .data.show=[] | .data.verifying_list=[] | .data.ad_loc=false else . end'
+# S0026 | 首页轮播
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/Banner 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "array" then .data=[] else . end'
+# S0029 | 初始化：保留全部上游字段净化，包括商城、游戏与消息计数
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/AppInit 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.flash | type) == "object" and (.data.operate | type) == "object" then .data.flash={"id":0,"title":"","img":"","jump_type":0,"jump_value":"","offline_time":"","meta_type":0,"video":"","online_time":"","button":"","video_hash":"","button_type":0,"click_type":0,"show_limit":0,"txt_type":0,"back_img":"","flow_id":""} | .data.operate={"id":0,"title":"","img":"","jump_url":"","gift_type":0,"gift_comic_id":0,"gift_url":"","has_taken_gift":false,"jump_type":0,"img_type":0,"md5":"","play_mode":0} | .data.user_center_operate=null | .data.activity_tab=null | .data.bubble=null | .data.card_banner_in_pay=null | .data.card_banner_in_ctrl={"id":0,"img_url":""} | .data.card_banner_in_coupon=null | .data.fission={"enable_entry":false,"title":"","subtitle":"","url":""} | .data.shop_entry=false | .data.shop_entry_txt="" | .data.shop_entry_icon="" | .data.game_entry=false | .data.game_entry_txt="" | .data.game_entry_desc="" | .data.game_entry_url="" | .data.game_entry_icon="" | .data.act_entry_txt="" | .data.act_entry_txt_type=0 | .data.unread_message_count=0 else . end'
+# S0032 | 活动 Tab 与商城入口
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetClassPageAllTabs 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.home_type | type) == "array" and (.data.home_feed | type) == "array" and all(.data.home_type[]; type == "object" and (.name | type) == "string") and all(.data.home_feed[]; type == "object" and (.name | type) == "string") then .data.home_type |= map(select(.name!="初夏纯爱！" and .name!="妖气村")) | .data.home_feed |= map(select(.name!="商城")) else . end'
+# S0035 | 推荐运营卡片与签到横幅
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Home\/HomeFeed 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.feeds | type) == "array" and (.data.banner | type) == "object" and all(.data.feeds[]; type == "object" and (.type | type) == "number") then .data.feeds |= map(select(.type!=42)) | .data.banner.image="" | .data.banner.jump_url="" | .data.banner.text="" | .data.banner.remain_sign_days=0 else . end'
+# S0038 | 活动 Tab
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetActivityTab 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data | has("name")) then .data.name="" | .data.img="" | .data.url="" | .data.gif="" | .data.cycle_num=0 | .data.bubble_txt="" | .data.id=0 else . end'
+# S0041 | 气泡
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetBubbles 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.bubbles | type) == "array" then .data.bubbles=[] | .data.rule=null else . end'
+# S0044 | 福利横幅
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetWelfareBanner 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data | has("type")) and (.data | has("title")) then .data.type=0 | .data.title="" | .data.sub_title="" | .data.content="" | .data.jump_url="" else . end'
+# S0047 | 运营横幅；保留上游 Operater 拼写
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetOperaterBanner 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.operate | type) == "object" then .data.operate={"id":0,"title":"","img":"","jump_url":"","gift_type":0,"gift_comic_id":0,"gift_url":"","has_taken_gift":false,"jump_type":0,"img_type":0,"md5":"","play_mode":0} else . end'
+# S0050 | 通用横幅与畅读卡营销
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetCommonBanner 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data | has("id")) and (.data | has("title")) then .data.id=0 | .data.title="" | .data.content="" | .data.jump_url="" | .data.jump_type=0 | .data.background="" | .data.image_url="" | .data.comic_id=0 | .data.icon="" | .data.type=0 | .data.column=null | .data.limit_scope=0 | .data.btn_txt="" | .data.img_type=0 | .data.play_mode=0 | .data.color_type=0 | .data.sub_background="" | .data.relate_second_page=false | .data.active_time="" | .data.offline_time="" | .data.create_time="" | .data.status=0 | .data.banner_ext=null | .data.bubble_text="" | .data.calendar_ext=null else . end'
+# S0053 | Hook 横幅
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/GetHookBanner 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data | has("id")) and (.data | has("title")) then .data.id=0 | .data.title="" | .data.jump_url="" | .data.image_url="" else . end'
+# S0056 | 我的页仅保留我的已购
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/user\.v\d\.User\/UCenterConf 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.confs | type) == "array" and all(.data.confs[]; type == "object" and (.title | type) == "string") then .data.confs |= map(select(.title=="我的已购")) | .data.show_welfare=false | .data.show_all_welfare=false else . end'
+# S0059 | 营销中心入口与弹窗
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/user\.v\d\.User\/GetMarketingCenterInfo 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.entry | type) == "object" and (.data.popup | type) == "object" then .data.show_entry=false | .data.entry.image="" | .data.entry.url="" | .data.entry.entry_id="0" | .data.show_popup=false | .data.popup.image="" | .data.popup.url="" | .data.popup.activity_id="0" | .data.popup.entry_id="0" else . end'
+# S0062 | 搜索填词
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/search\.v\d\.Search\/GetSearchBoxKeyword 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.keywords | type) == "array" then .data.keywords=[] else . end'
+# S0065 | 搜索页展示
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/SearchDisplay 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.list | type) == "array" then .data.list=[] else . end'
+# S0068 | 搜索页横幅
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/SearchBanner 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.banners | type) == "array" then .data.banners=[] else . end'
+# S0071 | 猜你喜欢标签
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/search\.v\d\.Search\/GetGuessLabel 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.labels | type) == "array" then .data.labels=[] else . end'
+# S0074 | 热搜
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/search\.v\d\.Search\/GetHotSearch 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.comics | type) == "array" then .data.comics=[] else . end'
+# S0077 | 红点
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/line\.v\d\.Line\/TabRedDot 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "object" and (.data.has_red_dot | type) == "boolean" then .data.has_red_dot=false else . end'
+# S0080 | 推荐
+http-response-jq ^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/Recommend 'if type == "object" and ((has("code") | not) or .code == 0) and (.data | type) == "array" then .data=[] else . end'
+# @source CainiaoAds
+# S0022 | 我的页：按原 truthy 条件删除推广/资产/钱包
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.app\.e2e\.engine\.page\.fetch '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" and (.data.data|type)=="object" then .data.data |= with_entries(select(((.key=="banner" or .key=="activity" or .key=="asset" or .key=="vip" or .key=="wallet") and .value!=null and .value!=false and .value!=0 and .value!="")|not)) else . end) catch $original'
+# S0024 | 合并首页：仅处理原 0..3 子响应，子响应失败也透传
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.nbpresentation\.homepage\.merge\.get\.cn '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" then .data |= with_entries(if (.key|test("^mtop\\.cainiao\\.nbpresentation\\.protocol\\.homepage\\.get\\.cn@[0-3]$")) and (.value|ok) and (.value.data.result.dataList|type)=="array" and all(.value.data.result.dataList[];type=="object" and (.type|type)=="string") then .value.data.result.dataList |= map(select(.type!="big_banner_area_v870" and .type!="todo_list_v860")) else . end) else . end) catch $original'
+# S0026 | 首页惊喜福利与待办区
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.nbpresentation\.protocol\.homepage\.get\.cn '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" and (.data.result|type)=="object" and (.data.result.dataList|type)=="array" and all(.data.result.dataList[];type=="object" and (.type|type)=="string") then .data.result.dataList |= map(select(.type!="big_banner_area_v870" and .type!="todo_list_v860")) else . end) catch $original'
+# S0028 | 搜索推荐词
+http-response-jq ^https?:\/\/[a-zA-Z0-9_.-]+\.cainiao\.com\/gw\/mtop\.cainiao\.adkeyword '. as $original | try (def ok: type=="object" and (any(.ret[]?;type=="string" and startswith("FAIL_"))|not) and ([.error,.errorMessage]|all(.==null or .==false or .=="")); if ok and (.data|type)=="object" and (.data.result|type)=="object" and .data.result.adHotKeywords!=null and .data.result.adHotKeywords!=false and .data.result.adHotKeywords!=0 and .data.result.adHotKeywords!="" then .data.result.adHotKeywords=[] else . end) catch $original'
+# @source GoofishAds
+# S0027 | 悬浮球
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idle.user.strategy.list 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.strategies | type) == "array" then .data.strategies=[{}] else . end'
+# S0031 | 首页顶部 Tab
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idlehome.home.circle.list 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.circleList | type) == "array" and all(.data.circleList[]; type == "object" and (.bizCode | type) == "string") then .data.circleList |= map(select(.bizCode != "saveMoney")) else . end'
+# S0033 | 首页仅保留第一顶部项与商品信息流
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idlehome.home.nextfresh 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.homeTopList | type) == "array" and (.data.sections | type) == "array" and all(.data.sections[]; type == "object" and (.data | type) == "object" and (.data.bizType | type) == "string") then .data.homeTopList |= [.[0]] | .data.sections |= map(select(.data.bizType == "item")) else . end'
+# S0035 | 搜索填词
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idlemtopsearch.search.shade 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.singleShadeWords | type) == "array" then .data.singleShadeWords=[{}] else . end'
+# S0037 | 猜你可能找
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idlemtopsearch.item.search.activate 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.cardList | type) == "array" then .data.cardList=[{}] else . end'
+# S0039 | 搜索发现
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idlemtopsearch.search.discover 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.resultList | type) == "array" then del(.data.resultList) else . end'
+# S0041 | 我的页保留 head/user/trade 正则分支
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.idle.user.page.my.adapter 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.ability | type) == "array" and (.data.container | type) == "object" and (.data.container.sections | type) == "array" and all(.data.container.sections[]; type == "object" and (.sectionBizCode | type) == "string") then .data.ability=[] | .data.container.sections |= map(select(.sectionBizCode | test("head|user|trade"))) else . end'
+# S0043 | 我的页购买推荐流
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idle.item.buy.feeds 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.sections | type) == "array" then del(.data.sections) else . end'
+# S0045 | 本地仅保留商品流
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idle.local.home 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.sections | type) == "array" and all(.data.sections[]; type == "object" and (.data | type) == "object" and (.data.bizType | type) == "string") then .data.sections |= map(select(.data.bizType == "item")) else . end'
+# S0047 | 搜索结果仅保留商品；原来的宽路径正则保留
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idlemtopsearch.search 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.resultList | type) == "array" and all(.data.resultList[]; type == "object" and (.data | type) == "object" and (.data.item | type) == "object" and (.data.item.main | type) == "object" and (.data.item.main.clickParam | type) == "object" and (.data.item.main.clickParam.args | type) == "object" and (.data.item.main.clickParam.args.biz_type | type) == "string") then .data.resultList |= map(select(.data.item.main.clickParam.args.biz_type == "item")) else . end'
+# S0049 | 商品底部剔除 mamaAD
+http-response-jq ^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.taobao.idle.item.recommend 'if type == "object" and (any(.ret[]?; type == "string" and startswith("FAIL_")) | not) and (.data | type) == "object" and (.data.cardList | type) == "array" and all(.data.cardList[]; type == "object" and (.cardData | type) == "object" and (.cardData.bizType | type) == "string") then .data.cardList |= map(select(.cardData.bizType != "mamaAD")) else . end'
+# @source MoJiWeatherAds
+# S0021 | 我的页面移除工具区、我页面灯泡、banner区
+http-response-jq ^https?:\/\/.*api\.moji\.com\/json\/entrance\/list 'if type == "object" and (.entrance_region_res_list | type) == "array" and all(.entrance_region_res_list[]; type == "object" and (.region_name | type) == "string") then .entrance_region_res_list |= map(select(.region_name | IN("工具区", "我页面灯泡", "banner区") | not)) else . end'
+# @source TieBaAds
+# S0022 | 首页搜索、进吧搜索
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/search\/discover 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") and (.data | type) == "object" and (.data.discover_list | type) == "array" then .data.discover_list=[] else . end'
+# S0024 | 侧边抽屉栏
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/sidebar\/home 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") then del(.game_center, .tools, .vip_banner, .task_list) else . end'
+# S0026 | 我的页面：保留原完整净化和功能区筛选
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/u\/user\/profile 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") and (.zone_info | type) == "array" and all(.zone_info[]; type == "object" and (.type | type) == "string") then del(.duxiaoman, .namoaixud, .namoaixud_entry, .recom_naws_list, .duxiaoman_entry, .vip_banner) | .zone_info |= map(select(.type == "common_func" or .type == "auxiliary_func")) else . end'
+# S0028 | 进吧推荐搜索
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/forum\/forumGuide 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") and (.hot_search | type) == "array" then .hot_search=[] else . end'
+# S0030 | 搜索推荐
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/mo\/q\/search\/startPage 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") then del(.data) else . end'
+
+[Script]
+# @source AmapAds
+# S0028 | 请求阶段 AMDC
+Amap-AMDC = type=http-request,pattern=^http:\/\/amdc\.m\.taobao\.com,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/amdc.js,timeout=5
+# @source Applet
+# S0035 | 掌上公交：仅精确属性和值
+Applet-Bus = type=http-response,pattern=^https?:\/\/wx\.mygolbs\.com\/WxBusServer\/ApiData\.do,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/bus.js,requires-body=true,max-size=1048576,timeout=5
+# S0037 | 通用 URL 谓词保留；仅下列枚举 MITM 主机可解密
+Applet-Posts = type=http-response,pattern="^(https?://)?([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}(:\d+)?/wp-json/[a-zA-Z0-9_-]+/(mp\/)?v\d/posts",script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/applet.js,requires-body=true,max-size=1048576,timeout=5
+# @source CainiaoAds
+# S0020 | 请求阶段 AMDC
+Cainiao-AMDC = type=http-request,pattern=^http:\/\/amdc\.m\.taobao\.com,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/amdc.js,timeout=5
+# @source CheLaiLeAds
+# S0032 | YGKJ 底栏：保留包装、原始字节与数字精度
+CheLaiLe-City = type=http-response,pattern=^https?:\/\/.*chelaile\.net\.cn\/goocity\/city!,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/chelaile.js,requires-body=true,max-size=1048576,timeout=5
+# @source GoofishAds
+# S0051 | AMDC：请求阶段短路，保留全部原 UA 分支
+Goofish-AMDC = type=http-request,pattern="^http:\/\/[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+){1,4}(:\d+)?\/amdc\/mobileDispatch",script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/amdc.js,timeout=5
+# @source TieBaAds
+# S0034 | 仅源配置激活的 protobuf 分支；默认保留普通视频帖子
+TieBa-Proto = type=http-response,pattern=^http(s:\/\/tiebac|:\/\/c\.tieba)\.baidu\.com\/c\/f\/(frs\/(page|threadlist|generalTabList)|pb\/page|excellent\/personalized)\?cmd,requires-body=true,binary-body-mode=true,max-size=1048576,timeout=5,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/tieba-proto.js
+
+[MITM]
+hostname = %APPEND% m5.amap.com, m5-zb.amap.com, center.amap.com, amap-aos-info-nogw.amap.com, ai.amap.com, api.blibee.com, ucmp.sf-express.com, www.bbkj.work, wx.wxqqurl.cn, wp3.lobdol.cn, awg.enmonster.com, mp.weixin.qq.com, wx.mygolbs.com, jabi.coding.net, api.bspapp.com, 3dd0be8a-54fe-43ff-a0e7-f670c4f20432.bspapp.com, *.tslt.xyz, g.syshhc.top, c.jxjt888.top, www.laoguikeji.cn, qj.bpojie.com, b.tslt.xyz, m.xgjyouhui.com, www.freeheikeji.cn, xcx.xianbaow.com, *.smkj33.top, *.ddly666.top, hkj178.com, a.jxjt888.top, lysl2020.com, www.i3zh.com, iosoi.cn, jt.jxjt888.top, gjsx.vip, d.syshhc.top, gz.gongzijx.com, tvapp.guilaile.cn, www.benbenfx.xyz, 4thdimension.top, tan.ipnas.ltd, manga.bilibili.com, *.cainiao.com, guide-acs.m.taobao.com, acs4miniapp-inner.m.taobao.com, web.chelaile.net.cn, api.chelaile.net.cn, cdn.api.chelaile.net.cn, cdn.web.chelaile.net.cn, atrace.chelaile.net.cn, 124.70.194.16, acs.m.goofish.com, g-acs.m.goofish.com, *.api.moji.com, tnc*-*.zijieapi.com, tieba.baidu.com, tiebac.baidu.com

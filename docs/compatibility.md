@@ -1,14 +1,14 @@
 # 兼容性、覆盖与验证边界
 
-本批八模块移植的是 2026-10-31 冻结的选定配置，完整保留健康、已支持结构上的净化，包含正常 UI 与功能移除；不是上游全部项目或所有 App 版本的兼容承诺。每个源配置的有效行数为 Amap 19、Applet 5、BiliBiliComics 20、Cainiao 13、CheLaiLe 8、Goofish 15、MoJiWeather 8、TieBa 8，共 96。配置物理行号 Sxxxx、原 URL 谓词、动作与差异在各模块 AUDIT.md；[manifest](../references/moyu-independent/manifest.json)固定八配置和七脚本的 SHA-256/脚本字节数。
+本合集的八个来源移植的是 2026-10-31 冻结的选定配置，完整保留健康、已支持结构上的净化，包含正常 UI 与功能移除；不是上游全部项目或所有 App 版本的兼容承诺。每个源配置的有效行数为 Amap 19、Applet 5、BiliBiliComics 20、Cainiao 13、CheLaiLe 8、Goofish 15、MoJiWeather 8、TieBa 8，共 96。配置物理行号 Sxxxx、原 URL 谓词、动作与差异在 MoyuAds/audits/ 各来源审计中；[manifest](../references/moyu-independent/manifest.json)固定八配置和七脚本的 SHA-256/脚本字节数。
 
 ## 已验证范围
 
-- 九模块分别、全部九模块共同生成临时完整配置，经本机 `/Applications/Surge.app/Contents/Applications/surge-cli --check` 接受。只调用离线语法检查；未启用模块、切换用户配置、变更证书或安装/卸载 App。
+- 实际 MoyuAds、StartUpAds 分别和两者组合生成临时完整配置，经本机 `/Applications/Surge.app/Contents/Applications/surge-cli --check` 接受。只调用离线语法检查；未启用模块、切换用户配置、变更证书或安装/卸载 App。
 - 所有已发布 StartUpAds 文件直接对照 Git `63268de8cb9b433b04878999dacf1e2965a12d2b` 的真实 20 个 blob，模块和 19 个脚本保持字节身份；冻结源逐一重算 SHA-256。每个运行资源指向本模块 `main/<folder>/js/<file>`，没有跨模块加载器或上游运行资源。
 - 真实 jq 的健康输入与冻结原 jq/隔离原脚本差分；未知/错误结构、非法 JSON、非目标大整数和长小数、重叠 jq、原字段/普通内容保留均有 fixtures。原始来源只在测试 VM 中有界执行。
-- `npm run test:jsc` 重跑实际行为测试，捕获实际拥有脚本的调用与预期结果；在执行前保存独立输入快照。带类型的边界保留 undefined 和 Uint8Array 子视图范围，再由 Swift 的系统 JavaScriptCore 新建每个 realm 执行真实脚本文件；逐项比较真实输出，二进制按原始字节比较，要求恰好一次 `$done`。七个新增脚本均须有捕获调用，另涵盖 StartUpAds AMDC 重叠测试；没有为重放生成替代产品实现。
-- TieBa 包括未知字段/次序/原始数值字节、singular message 合并/重复标量、两种 pb cmd、UTF-8 已知字符串、状态/坏帧/边界体积测试；未知 byte 字段保持不透明。具体字段路径与故意修正见 [TieBa 审计](../TieBaAds/AUDIT.md)。
+- `npm run test:jsc` 重跑实际行为测试，捕获实际拥有脚本的调用与预期结果；在执行前保存独立输入快照。带类型的边界保留 undefined 和 Uint8Array 子视图范围，再由 Swift 的系统 JavaScriptCore 新建每个 realm 执行真实脚本文件；逐项比较真实输出，二进制按原始字节比较，要求恰好一次 `$done`。五个合集脚本均须有捕获调用，另涵盖 StartUpAds AMDC 重叠测试；没有为重放生成替代产品实现。
+- TieBa 包括未知字段/次序/原始数值字节、singular message 合并/重复标量、两种 pb cmd、UTF-8 已知字符串、状态/坏帧/边界体积测试；未知 byte 字段保持不透明。具体字段路径与故意修正见 [TieBa 审计](../MoyuAds/audits/TieBaAds.md)。
 
 这些是本地静态检查和受控 fixture/native 引擎证据，不能证明真实网络命中、App 登录/页面全流程、iOS/旧版引擎或服务今后的结构兼容。安装 URL 是发布目标，本地测试不证明远端已发布或字节一致；发布与远端读回另行验证。最低支持语法为 Surge Mac 5.9.0+ / iOS 5.14.0+，并未在这两个历史版本的设备上验收。当前 jq 的数字保留测试也不能代替每版 Surge 内置 jq 的实测。
 
@@ -22,7 +22,7 @@
 
 | 重叠 | 验证与边界 |
 |---|---|
-| StartUpAds / Amap / Cainiao / Goofish AMDC | 共用命中 URL `http://amdc.m.taobao.com/amdc/mobileDispatch`，逐一跑全部 11 个原 UA 分支及大小写/未知/缺失/非字符串 UA；命中时 200、text/plain UTF-8、ddgksf2013，否则放行。因此首个匹配脚本决定处理时结果相同；Amap/Cainiao 主机谓词较窄，未扩大源范围。 |
+| StartUpAds / MoyuAds 内三个来源的 AMDC | 共用命中 URL `http://amdc.m.taobao.com/amdc/mobileDispatch`，逐一跑全部 11 个原 UA 分支及大小写/未知/缺失/非字符串 UA；合集三条原声明共享同一份字节不变的 AMDC 脚本；命中时 200、text/plain UTF-8、ddgksf2013，否则放行。因此首个匹配脚本决定处理时结果相同；Amap/Cainiao 主机谓词较窄，保留三条声明各自原谓词和顺序，未扩大源范围。 |
 | StartUpAds / TieBa getFeedAd | tiebac.baidu.com `/c/f/ad/getFeedAd` 都为默认 200 空文本，不再进入二进制广告分支。 |
 | StartUpAds / Cainiao show、mshow | cn-acs.m.cainiao.com 两个实际 ads.show/mshow 路径都为空 200 文本。 |
 | StartUpAds / Goofish splash | acs.m.goofish.com 实际 splash.ads 路径都为空 200 文本；Goofish 还保留自己的 g-acs 覆盖。 |
@@ -37,7 +37,7 @@
 |---|---|---|
 | QX reject-200/dict 转原生 Map Local，AMDC 转请求阶段短路 | 保留实际 HTTP 意图，空文本默认 200、字典为 `{}` 且显式 application/json、图片为 tiny-gif；不照搬其他工具声明。每条映射保留在审计中。 | 若原服务依赖不同状态/MIME/时序，可能改变客户端流程；需用端点真实响应回归，不应统一改成 reject 或 JSON。 |
 | 未知/错误结构和无法安全处理的数字透传，健康支持结构完整净化 | provider 专用成功/错误信封与结构保护避免将诊断或未来字段清空，修复上游腐坏文本替换。不存在跨提供方通用 code!=0 规则。 | 结构变化时广告可能保留；过严保护会漏清，过松则可能损坏正常数据。 |
-| 每个需要 AMDC 的模块拥有独立小脚本 | 单模块可独立安装，不依赖 StartUpAds 或共享外部加载器。 | 多份代码会有维护漂移成本；共存行为测试约束漂移。 |
+| 合集三条 AMDC 声明共用一个字节不变的小脚本 | 用户要求单入口；原三个副本完全相同，保留原匹配条件和顺序，只合并文件。合集仍不依赖 StartUpAds。 | 未来修改共享脚本会同时影响三组来源，应继续核对原 UA 分支与共存样本。 |
 | Applet 保留枚举 MITM，不按通用 URL 开全局解密 | 保持源范围和用户解密边界，接受范围外 HTTPS 不净化。 | 新主机广告可能遗漏；错误扩大范围会解密无关流量。 |
 | 保留旧公众号替换并标明遗留 | 用户选择完整源语义；另一个上游 WeChat.conf 已标过时，不将遗留规则冒充现时功能。 | 可能无效，也可能随服务变化影响返回文本；不要据此承诺公众号净化。 |
 | 无损 scalar/span 编辑可在保留不安全数值原字节时继续目标净化 | 旧“含不安全数字整份透传”是针对 JSON.parse/stringify 精度损失的防护；已证明无损编辑无需丢弃全部净化。仍须校验结构/坏数据。 | tokenizer/span 错误可能破坏 JSON 或误改无关内容；原始数字/引号/HTML 边界回归持续约束。 |
@@ -50,3 +50,9 @@
 原作者原生模块同样使用二进制响应 API；它没有强制全局 MITM h2，本项目不添加这个要求。[issue #266](https://github.com/app2smile/rules/issues/266)最初描述 TieBa 22.01/Bili 失败，但报告人随后在 2026-01-26 确认是 HTTPS 解密证书密码错误且已解决，不能据标题断言该 App 版本普遍失效。[issue #271](https://github.com/app2smile/rules/issues/271)是 Shadowrocket 2.282 的 HTTP/2 登录报告，不是已验证 Surge 故障。以上只限定证据解读，不构成本项目的真实 App 验收。
 
 冻结的 app2smile 原脚本只作测试 oracle，保留相邻[原 MIT License](../references/moyu-independent/scripts/tieba-proto.LICENSE.md)，Copyright (c) 2023 app2smile；从原仓库 LICENSE.md 获取，Git blob SHA-1 `d448042e50096ce6482b86199249f543951e051b`。这份许可未被扩展到 ddgksf2013/Cuttlefish 或其他来源；每份源仍保留自己的归属。
+
+## 本次合并与交付状态
+
+按用户要求，原八个独立模块在仓库中替换为 `MoyuAds/MoyuAds.sgmodule`，仅保留一个实际入口。所有原 Rule、URL Rewrite、Map Local、Body Rewrite/JQ、Script 声明逐项对照已发布 `74662af52b4a2c581aef34e17cbbb7fe030b06ff`，保持规则和各节内顺序，只有脚本下载路径迁移至 `MoyuAds/js/`。MITM 是原主机列表去重并集，单个 `%APPEND%` 赋值。`# @source` 与其后 Sxxxx 注释共同标识来源，避免不同配置的相同行号混淆。
+
+用户在本地审阅后授权仓库也只保留一个合集入口。本次发布一个 MoyuAds 模块和五份自有 JS，删除原八个独立运行目录；冻结配置和逐来源审计仍保留用于追溯。发布后应回读提交、检查旧目录删除，并下载六个运行资源逐字节比较。仓库发布不安装模块或操作 Surge 状态；以后设备迁移时需手动移除八个旧订阅并添加合集。StartUpAds 和三个 kelee 模块保持原样。仍未完成 iOS、历史版本或真实 App 流量验收。

@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const {spawnSync}=require('node:child_process');
-const {root,parseModule,sourceActiveLines,runJq,runScript,validateSurge}=require('./helpers');
+const {root,parseSource: parseModule,sourceActiveLines,runJq,runScript,validateSurge}=require('./helpers');
 const names=['AmapAds','Applet','CainiaoAds','CheLaiLeAds'];
 function entry(name,id){return Object.values(parseModule(name)).flat().find(e=>e.ids.includes(id));}
 function jq(name,id,body){return runJq(entry(name,id).tokens.slice(2).join(' ').slice(1,-1),body);}
@@ -68,38 +68,38 @@ test('conditional fields, absent children, and future collection discriminators 
 function script(file,url,body){const value=runScript(file,{$request:{url},$response:{body}});return value.body===undefined?body:value.body;}
 test('Applet generic edits exact JSON fields without suffix-key or escaped-text corruption',()=>{
  const raw='{"excitationAd":"9","Ad":"2","ad":true,"AdId":"abc","adid":"abc","fr_videp_if":"1","slot":"adunit-123","myAd":true,"prefixAdId":"keep","text":"escaped \\\"ad\\\":true and adunit123", "id":9007199254740993123456789,"decimal":0.1234567890123456789012345}';
- const out=script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',raw);
+ const out=script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',raw);
  assert.equal(out,'{"excitationAd":"0","Ad":"0","ad":false,"AdId":"","adid":"","fr_videp_if":"0","slot":"","myAd":true,"prefixAdId":"keep","text":"escaped \\\"ad\\\":true and adunit123", "id":9007199254740993123456789,"decimal":0.1234567890123456789012345}');
- for(const body of ['{bad','null','[]','{"error":"bad","ad":true}','{"ad":1,"Ad":"hello","AdId":null,"adunitKey":"keep"}'])assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),body);
+ for(const body of ['{bad','null','[]','{"error":"bad","ad":true}','{"ad":1,"Ad":"hello","AdId":null,"adunitKey":"keep"}'])assert.equal(script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),body);
 });
 test('Applet embedded ad-unit attribute retains valid HTML and unrelated prose',()=>{
  const body=JSON.stringify({html:'<ad unit-id="adunit-ab12"></ad><p>adunit advice</p>',text:'adunit-advice is prose'});
- assert.deepEqual(JSON.parse(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body)),{html:'<ad unit-id=""></ad><p>adunit advice</p>',text:'adunit-advice is prose'});
+ assert.deepEqual(JSON.parse(script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body)),{html:'<ad unit-id=""></ad><p>adunit advice</p>',text:'adunit-advice is prose'});
 });
 test('Applet upstream malformed escapes and suffix replacements have concrete regression evidence',()=>{
  const generic='{"excitationAd":"1","ad":true,"AdId":"x","adid":"y","fr_videp_if":"1","slot":"adunit123","keep":7}';
  const genericWant='{"excitationAd":"0","ad":false,"AdId":"","adid":"","fr_videp_if":"0","slot":"","keep":7}';
  assert.equal(original('applet.js','',generic),genericWant);
- assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',generic),genericWant);
+ assert.equal(script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',generic),genericWant);
  const bus='{"Ad":1,"Ad_ab":1,"keep":7}',busWant='{"Ad":0,"Ad_ab":0,"keep":7}';
  assert.equal(original('zhangshanggongjiao.js','',bus),busWant);
- assert.equal(script('Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',bus),busWant);
+ assert.equal(script('MoyuAds/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',bus),busWant);
  assert.equal(original('applet.js','', '{"Ad":"2","prefixAdId":"keep","slot":"adunit123","adunitKey":"x"}'),'{"Ad":"2","prefixAdId":"","slot":"","":"x"}');
  assert.equal(original('zhangshanggongjiao.js','', '{"Ad":10,"myAd":1,"Ad_ab":1}'),'{"Ad":00,"myAd":0,"Ad_ab":0}');
 });
 test('Applet bus edits only exact numeric one properties and retains raw large numbers',()=>{
  const body='{"Ad":1,"Ad_ab":1,"myAd":1,"Ad":10,"id":9007199254740993123456789,"text":"Ad\\\":1"}';
- assert.equal(script('Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),'{"Ad":0,"Ad_ab":0,"myAd":1,"Ad":10,"id":9007199254740993123456789,"text":"Ad\\\":1"}');
- for(const body of ['{bad','{"error":"invalid","Ad":1}','{"Ad":2}'])assert.equal(script('Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),body);
+ assert.equal(script('MoyuAds/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),'{"Ad":0,"Ad_ab":0,"myAd":1,"Ad":10,"id":9007199254740993123456789,"text":"Ad\\\":1"}');
+ for(const body of ['{bad','{"error":"invalid","Ad":1}','{"Ad":2}'])assert.equal(script('MoyuAds/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),body);
 });
 test('CheLaiLe preserves wrapper siblings, raw unsafe numeric tokens, escaped strings and selected item data',()=>{
  const raw='prefix\n**YGKJ{"jsonr":{"data":{"cityList":[{"title":"首页","picUrl":"ad","keep":9007199254740993123456789,"clickIconUrl":"ad"},{"title":"商城","id":2},{"title":"我的","other":"escaped \\\" text","picUrl":"ad"},{"title":"路线规划","clickIconUrl":"ad"}],"decimal":0.1234567890123456789012345}},"keep":1}YGKJ**\nsuffix';
  const want='prefix\n**YGKJ{"jsonr":{"data":{"cityList":[{"title":"首页","keep":9007199254740993123456789},{"title":"我的","other":"escaped \\\" text"},{"title":"路线规划"}],"decimal":0.1234567890123456789012345}},"keep":1}YGKJ**\nsuffix';
- assert.equal(script('CheLaiLeAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',raw),want);
+ assert.equal(script('MoyuAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',raw),want);
  const healthy='**YGKJ{"jsonr":{"data":{"cityList":[{"title":"首页","picUrl":"a"},{"title":"商城"},{"title":"我的","clickIconUrl":"b"},{"title":"路线规划"}]}}}YGKJ**';
- assert.equal(script('CheLaiLeAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',healthy),original('chelaile.js','https://web.chelaile.net.cn/goocity/city!',healthy));
- for(const body of ['unwrapped','**YGKJ{brokenYGKJ**','**YGKJ{}YGKJ**','**YGKJ{"jsonr":{"data":{"cityList":[null]}}}YGKJ**','**YGKJ{"error":"invalid","jsonr":{"data":{"cityList":[{"title":"商城"}]}}}YGKJ**'])assert.equal(script('CheLaiLeAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',body),body);
- assert.equal(script('CheLaiLeAds/js/chelaile.js','https://web.chelaile.net.cn/unknown',healthy),healthy);
+ assert.equal(script('MoyuAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',healthy),original('chelaile.js','https://web.chelaile.net.cn/goocity/city!',healthy));
+ for(const body of ['unwrapped','**YGKJ{brokenYGKJ**','**YGKJ{}YGKJ**','**YGKJ{"jsonr":{"data":{"cityList":[null]}}}YGKJ**','**YGKJ{"error":"invalid","jsonr":{"data":{"cityList":[{"title":"商城"}]}}}YGKJ**'])assert.equal(script('MoyuAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',body),body);
+ assert.equal(script('MoyuAds/js/chelaile.js','https://web.chelaile.net.cn/unknown',healthy),healthy);
 });
 for(const name of names)test(`${name}: every source action retains its predicate, owned resources and native syntax`,()=>{
  const sections=parseModule(name),entries=Object.values(sections).flat();
@@ -112,22 +112,22 @@ for(const name of names)test(`${name}: every source action retains its predicate
   if(source.text.endsWith('url reject'))assert.match(e.text,/ reject$/);
  }
  for(const e of sections.Script||[]){
-  const prefix='https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/'+name+'/js/';assert.ok(e.options['script-path'].startsWith(prefix));
+  const prefix='https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/js/';assert.ok(e.options['script-path'].startsWith(prefix));
   assert.ok(fs.existsSync(path.join(root,e.options['script-path'].slice('https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/'.length))));
   assert.equal(e.options.timeout,'5');if(e.options.type==='http-response'){assert.equal(e.options['requires-body'],'true');assert.equal(e.options['max-size'],'1048576');}
  }
  assert.ok(sections.MITM[0].text.startsWith('hostname = %APPEND% '));assert.ok(!sections.MITM[0].text.split(/[, ]+/).includes('*'));
- assert.match(validateSurge([name]),/OK/);
+ assert.match(validateSurge(['MoyuAds']),/OK/);
 });
-for(const name of ['AmapAds','CainiaoAds'])test(`${name}: AMDC is independent request-phase and body-free`,()=>{
+for(const name of ['AmapAds','CainiaoAds'])test(`${name}: AMDC source declaration uses shared request-phase body-free script`,()=>{
  const e=entry(name,name==='AmapAds'?'S0028':'S0020');assert.equal(e.options.type,'http-request');assert.equal(e.options['requires-body'],undefined);
- for(const ua of ['AMap','Cainiao','%E9%97%B2%E9%B1%BC','%E9%A3%9E%E7%8C%AA%E6%97%85%E8%A1%8C','%E5%96%B5%E8%A1%97','%E5%A4%A9%E7%8C%AB','Alibaba','MovieApp','Hema4iPhone','Moon','DMPortal'])assert.deepEqual(runScript(name+'/js/amdc.js',{$request:{headers:{'UsER-aGENT':ua}}}),{response:{status:200,headers:{'Content-Type':'text/plain; charset=utf-8'},body:'ddgksf2013'}});
- for(const headers of [{},{'User-Agent':'amap'},{'User-Agent':1},undefined])assert.deepEqual(runScript(name+'/js/amdc.js',{$request:{headers}}),{});
+ for(const ua of ['AMap','Cainiao','%E9%97%B2%E9%B1%BC','%E9%A3%9E%E7%8C%AA%E6%97%85%E8%A1%8C','%E5%96%B5%E8%A1%97','%E5%A4%A9%E7%8C%AB','Alibaba','MovieApp','Hema4iPhone','Moon','DMPortal'])assert.deepEqual(runScript('MoyuAds/js/amdc.js',{$request:{headers:{'UsER-aGENT':ua}}}),{response:{status:200,headers:{'Content-Type':'text/plain; charset=utf-8'},body:'ddgksf2013'}});
+ for(const headers of [{},{'User-Agent':'amap'},{'User-Agent':1},undefined])assert.deepEqual(runScript('MoyuAds/js/amdc.js',{$request:{headers}}),{});
 });
-test('four JSON modules coexist with the completed three native modules',()=>assert.match(validateSurge([...names,'GoofishAds','BiliBiliComicsAds','MoJiWeatherAds']),/OK/));
+test('merged JSON and native rules coexist in the actual module',()=>assert.match(validateSurge(['MoyuAds']),/OK/));
 test('owned Applet and CheLaiLe scripts execute in native JavaScriptCore',()=>{
  const os=require('node:os'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'json-jsc-'));
- try{for(const [file,url,body] of [['Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts','{"ad":true}'],['Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do','{"Ad":1}'],['CheLaiLeAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!','**YGKJ{"jsonr":{"data":{"cityList":[{"title":"首页","picUrl":"a"}]}}}YGKJ**']]){
+ try{for(const [file,url,body] of [['MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts','{"ad":true}'],['MoyuAds/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do','{"Ad":1}'],['MoyuAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!','**YGKJ{"jsonr":{"data":{"cityList":[{"title":"首页","picUrl":"a"}]}}}YGKJ**']]){
   const want=script(file,url,body),filename=path.join(dir,'test.js');fs.writeFileSync(filename,'var $request='+JSON.stringify({url})+';var $response='+JSON.stringify({body})+';var count=0;function $done(v){count++;if(v.body!=='+JSON.stringify(want)+')throw new Error("wrong body");}\n'+fs.readFileSync(path.join(root,file),'utf8')+'\nif(count!==1)throw new Error("done count");print("PASS");');
   const result=spawnSync('/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc',[filename],{encoding:'utf8'});assert.equal(result.status,0,result.stdout+result.stderr);assert.match(result.stdout,/PASS/);
  }}finally{fs.rmSync(dir,{recursive:true,force:true});}
@@ -146,8 +146,8 @@ test('Amap truthy dictionaries and falsy optional card fields preserve full sour
 });
 test('Applet healthy array posts, escaped exact keys, and successful errmsg retain purification',()=>{
  const raw='[{"\\u0041d":"4","ad":true,"errmsg":"ok","errcode":0},{"AdId":"a\\\"b","myAd":true}]';
- assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',raw),'[{"\\u0041d":"0","ad":false,"errmsg":"ok","errcode":0},{"AdId":"","myAd":true}]');
- assert.equal(script('Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do','{"errmsg":"ok","errcode":0,"Ad":1}'),'{"errmsg":"ok","errcode":0,"Ad":0}');
+ assert.equal(script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',raw),'[{"\\u0041d":"0","ad":false,"errmsg":"ok","errcode":0},{"AdId":"","myAd":true}]');
+ assert.equal(script('MoyuAds/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do','{"errmsg":"ok","errcode":0,"Ad":1}'),'{"errmsg":"ok","errcode":0,"Ad":0}');
 });
 test('CheLaiLe unknown items and explicit inner errors preserve the complete wrapper',()=>{
  for(const inner of [
@@ -156,7 +156,7 @@ test('CheLaiLe unknown items and explicit inner errors preserve the complete wra
   {jsonr:{data:{cityList:'future'}}}
  ]){
   const body='before**YGKJ'+JSON.stringify(inner)+'YGKJ**after';
-  assert.equal(script('CheLaiLeAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',body),body);
+  assert.equal(script('MoyuAds/js/chelaile.js','https://web.chelaile.net.cn/goocity/city!',body),body);
  }
 });
 test('Amap and Cainiao unexpected nested scalars never turn a supported response into an exception',()=>{
@@ -169,7 +169,7 @@ test('Amap and Cainiao unexpected nested scalars never turn a supported response
 });
 test('Applet bus healthy array payloads retain exact toggle purification',()=>{
  const body='[{"Ad":1,"Ad_ab":1,"id":9007199254740993123456789}]';
- assert.equal(script('Applet/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),'[{"Ad":0,"Ad_ab":0,"id":9007199254740993123456789}]');
+ assert.equal(script('MoyuAds/js/bus.js','https://wx.mygolbs.com/WxBusServer/ApiData.do',body),'[{"Ad":0,"Ad_ab":0,"id":9007199254740993123456789}]');
 });
 // Exact HTML attribute context must protect article prose and unrelated attribute values.
 for (const [label, content] of [
@@ -182,7 +182,7 @@ for (const [label, content] of [
 ]) {
  test(`Applet HTML context preserves ${label} and raw numeric tokens`, () => {
   const body='{"content":'+JSON.stringify(content)+',"id":9007199254740993123456789,"decimal":0.1234567890123456789012345}';
-  assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),body);
+  assert.equal(script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),body);
  });
 }
 test('Applet HTML context changes only a real exact attribute among quoted examples',()=>{
@@ -190,5 +190,5 @@ test('Applet HTML context changes only a real exact attribute among quoted examp
  const want='<ad title=\'Example: <ad unit-id="adunit-ab12">\'\n data-unit-id="adunit-cd34" unit-id = \'\'></ad>';
  const suffix=',"id":9007199254740993123456789,"decimal":0.1234567890123456789012345}';
  const body='{"content":'+JSON.stringify(content)+suffix;
- assert.equal(script('Applet/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),'{"content":'+JSON.stringify(want)+suffix);
+ assert.equal(script('MoyuAds/js/applet.js','https://www.bbkj.work/wp-json/api/v1/posts',body),'{"content":'+JSON.stringify(want)+suffix);
 });

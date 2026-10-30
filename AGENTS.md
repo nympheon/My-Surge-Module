@@ -31,6 +31,7 @@ https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/
 
 | 模块入口，相对于仓库根目录 | 运行依赖 | 用途 |
 | --- | --- | --- |
+| `MoyuAds/MoyuAds.sgmodule` | `MoyuAds/js/`，5 个 JS | 墨鱼八来源完整净化合集，替换原八个独立入口 |
 | `StartUpAds/StartUpAds.sgmodule` | `StartUpAds/js/`，19 个 JS | 墨鱼去开屏合集的 Surge 手工移植 |
 | `kelee/kelee.sgmodule` | `kelee/js/`，11 个 JS；`kelee/resources/`，3 个静态资源 | 已选 52 项可莉插件的集合，含外链功能和页面精简 |
 | `kelee-HTTPDNS/kelee-HTTPDNS.sgmodule` | 无 JS | 可莉 `Block_HTTPDNS` |
@@ -38,13 +39,15 @@ https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/
 
 不要把本地文件系统路径写回 `script-path`、Map Local 的资源地址或正文内的图片 URL。这里的仓库托管只针对脚本和静态资源下载地址：URL 正则匹配的业务主机、慢慢买等实际 API 地址仍是目标服务，不能一起替换成仓库 URL。不要把这些既有入口合并、重命名或替换成第三方动态转换链接。
 
-## 后续新增的墨鱼独立模块
+## 墨鱼八来源合并模块
 
-本批手工移植八个模块：`AmapAds`、`Applet`、`BiliBiliComicsAds`、`CainiaoAds`、`CheLaiLeAds`、`GoofishAds`、`MoJiWeatherAds`、`TieBaAds`；入口均为 `<目录>/<目录>.sgmodule`，共 96 条选定源规则、7 个模块自有运行 JS。用户明确选择保留原配置完整净化，包括正常 UI/搜索/推荐的删减。来源快照与 SHA-256 在 `references/moyu-independent/manifest.json`，逐行映射、行为与验证边界在各目录 `AUDIT.md`，总索引在 `docs/moyu-independent-modules.md`，兼容性取舍在 `docs/compatibility.md`。
+用户随后明确要求把八个独立模块合并为一个入口。统一入口为 `MoyuAds/MoyuAds.sgmodule`，覆盖 AmapAds、Applet、BiliBiliComicsAds、CainiaoAds、CheLaiLeAds、GoofishAds、MoJiWeatherAds、TieBaAds。保留完整净化、96 条来源映射和七条原 Script 声明；三份字节相同 AMDC 文件合为一个，配套五个运行 JS 均位于 `MoyuAds/js/`。原脚本匹配条件和各节内顺序保持不变，单个 MITM `%APPEND%` 使用原主机去重并集。用户这次要求替换八入口，覆盖之前保持这八个入口名称稳定的约定。
 
-新增根目录 `package.json` 与 `tests/` 服务于这批独立模块和已明确列出的 StartUpAds 重叠/字节身份检查；`npm test`、`npm run test:jsc` 不是旧 StartUpAds 全部脚本验证框架，也不替代 kelee/checks。下文“StartUpAds 历史资料”所列旧快照与完整测试仍未一起迁入。新旧广告合集可能命中相同接口，不能把九个指定模块的组合语法/样本结果外推为与 kelee 无条件同时启用；应按具体请求和开关顺序审查。
+用户先要求“不要改我的 Surge，你先只做模块”，随后明确要求“仓库里也只保留一个模块”，因此本次授权将这八个独立入口在仓库中替换为 MoyuAds 合集，并发布配套五份 JS。旧八个运行目录和模块入口删除，审计迁入 MoyuAds/audits；冻结来源保留。此授权只涉及仓库，不安装、切换设备模块或更改证书。设备订阅以后需移除旧八入口并添加一个合集，仓库变更不自动操作用户设备。StartUpAds 和三个 kelee 模块继续独立保留。
 
-本次整合保留 `2506bbc51ff84982ac7eba8306101f0d05b2b68e` 已发布的 StartUpAds、三个 kelee 模块及所有运行资源字节；不重新创建 README。尚未完成 iOS/旧版设备或各 App 真实流量全流程验收。
+来源快照和 SHA-256 仍在 `references/moyu-independent/manifest.json`；每个来源审计在 `MoyuAds/audits/<来源名>.md`，`# @source` 与 Sxxxx 共同区分原始行号。总索引 `docs/moyu-independent-modules.md`、兼容性 `docs/compatibility.md`。根 `tests/` 通过实际合并模块的来源分组运行已有行为 fixtures；parseSource 只是测试视图，不生成或发布虚拟子模块。`tests/merged-module.test.js` 对照已发布 74662af 的规则、顺序、JS 字节和 MITM 并集。未来有意更新规则时应审查并更新相应基线，不能为保数字而删断言。
+
+`npm test` 和 `npm run test:jsc` 服务于本合集及明确列出的 StartUpAds 重叠/字节身份检查，不是旧 StartUpAds 完整测试框架，也不替代 kelee/checks。合集与其他广告合集任意开关顺序没有全面验收；iOS、历史版本和各 App 实际流量仍未全量验收。原 StartUpAds、三个 kelee 模块及资源字节保持已发布版本；不重新创建 README。
 
 ## 阅读顺序
 

@@ -1,3 +1,5 @@
+> 合并模块：本来源由 `../MoyuAds.sgmodule` 的对应 `# @source` 分组实现，运行脚本统一位于 `../js/`。历史独立模块描述保留作审计语境；原八个独立入口已替换为一个 MoyuAds 合集。
+
 # MoJiWeatherAds 源行审计
 
 源作者：[@ddgksf2013](https://t.me/ddgksf2021)。[原配置](https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/MoJiWeatherAds.conf)，版本 V1.0.2，源更新标记 2025-11-03，冻结于 2026-10-31。字节与 SHA-256 见 `references/moyu-independent/manifest.json`。8 条活动源行全部保留，无排除、无启用注释规则。
@@ -23,7 +25,7 @@ URL 正则逐字保留，Map Local `data-type=text data=""` 对应原 reject-200
 
 ## 使用与验证边界
 
-[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoJiWeatherAds/MoJiWeatherAds.sgmodule) · [逐条审计](AUDIT.md)
+[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/MoyuAds.sgmodule) · 逐条审计（本文）
 
 需要 Surge Mac 5.9.0+ / iOS 5.14.0+；启用模块，并在自己的设备上完成 MITM 证书信任。MITM 追加原域名 `*.api.moji.com`、`tnc*-*.zijieapi.com`，未扩大为全局解密。
 

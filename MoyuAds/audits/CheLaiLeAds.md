@@ -1,6 +1,8 @@
+> 合并模块：本来源由 `../MoyuAds.sgmodule` 的对应 `# @source` 分组实现，运行脚本统一位于 `../js/`。历史独立模块描述保留作审计语境；原八个独立入口已替换为一个 MoyuAds 合集。
+
 # CheLaiLe manual port audit
 
-Authority: frozen `references/moyu-independent/CheLaiLeAds.conf` and `scripts/chelaile.js`, author ddgksf2013. Eight predicates retain exact source bytes. Decoded map: [docs/audits/chelaile.md](../docs/audits/chelaile.md).
+Authority: frozen `references/moyu-independent/CheLaiLeAds.conf` and `scripts/chelaile.js`, author ddgksf2013. Eight predicates retain exact source bytes. Decoded map: [docs/audits/chelaile.md](../../docs/audits/chelaile.md).
 
 | Source | Owned action | Behavior |
 |---|---|---|
@@ -21,7 +23,7 @@ Original five MITM domains are retained; 124.70.194.16 is added because two orig
 
 ## 使用与验证边界
 
-[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/CheLaiLeAds/CheLaiLeAds.sgmodule)。要求 Surge Mac 5.9.0+ / iOS 5.14.0+，启用 Rewrite、Scripting、MITM 并信任自己的证书。完整净化上游广告/跟踪端点和底栏，仅保留「首页、我的、路线规划」，移除保留项的 picUrl/clickIconUrl。
+[安装模块](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/MoyuAds.sgmodule)。要求 Surge Mac 5.9.0+ / iOS 5.14.0+，启用 Rewrite、Scripting、MITM 并信任自己的证书。完整净化上游广告/跟踪端点和底栏，仅保留「首页、我的、路线规划」，移除保留项的 picUrl/clickIconUrl。
 
 可读脚本只修改 YGKJ 包装内的目标列表，保留包装前后内容、未知字段和数字精度。来源 ddgksf2013，见本文。原 HTTPS IP 规则补入目标 IP 的 MITM，不扩大为全局解密。
 

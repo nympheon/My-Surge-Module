@@ -5,16 +5,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const {spawnSync} = require('node:child_process');
-const {root, parseModule, sourceActiveLines, validateSurge, runScript} = require('./helpers');
+const {root, parseModule, parseSource, sourceActiveLines, validateSurge, runScript} = require('./helpers');
 const manifest = require('../references/moyu-independent/manifest.json');
-const names = ['StartUpAds', ...manifest.modules.map(m => m.name)];
+const names = ['StartUpAds', 'MoyuAds'];
 const base = '63268de8cb9b433b04878999dacf1e2965a12d2b';
-const entries = (name, section) => parseModule(name)[section] || [];
+const entries = (name, section) => (names.includes(name) ? parseModule(name) : parseSource(name))[section] || [];
 const ownedPath = entry => new URL(entry.options['script-path']).pathname.split('/main/')[1];
 for (const name of names) test(`${name}: standalone native Surge validation`, () => {
   assert.match(validateSurge([name]), /OK|configuration.*valid/i);
 });
-test('all nine modules coexist in a native Surge full configuration', () => {
+test('StartUpAds and MoyuAds coexist in a native Surge full configuration', () => {
   assert.match(validateSurge(names), /OK|configuration.*valid/i);
 });
 test('96 selected source actions are accounted once; frozen SHA-256 identities hold', () => {
@@ -25,7 +25,7 @@ test('96 selected source actions are accounted once; frozen SHA-256 identities h
     const source = sourceActiveLines(module.name);
     assert.equal(source.length, module.active_lines);
     total += source.length;
-    assert.deepEqual(Object.values(parseModule(module.name)).flat().flatMap(e => e.ids).sort(), source.map(e => e.id).sort(), module.name);
+    assert.deepEqual(Object.values(parseSource(module.name)).flat().flatMap(e => e.ids).sort(), source.map(e => e.id).sort(), module.name);
   }
   assert.equal(total, 96);
   for (const script of manifest.scripts) {
@@ -124,7 +124,7 @@ test('JSC bridge snapshots undefined and byte-view bounds before later mutation'
 });
 test('native JSC bridge executes owned binary script and rejects mismatched output', () => {
   const {encodeBoundary,replayFixtures} = require('./native-jsc.cjs');
-  const fixture = {path:'TieBaAds/js/tieba-proto.js', globals:encodeBoundary({
+  const fixture = {path:'MoyuAds/js/tieba-proto.js', globals:encodeBoundary({
     $request:{url:'https://tiebac.baidu.com/c/f/frs/page?cmd=1'},
     $response:{status:200,body:new Uint8Array([18,3,162,7,0])}, BigInt:undefined,TextDecoder:undefined
   }), expected:encodeBoundary({body:new Uint8Array([18,0])})};

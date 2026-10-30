@@ -28,12 +28,13 @@ function splitQuoted(text, delimiter = ' ') {
 function parseModule(name) {
   const filename = name.endsWith('.sgmodule') ? name : `${name}/${name}.sgmodule`;
   const sections = {};
-  let section, ids = [];
+  let section, source, ids = [];
   fs.readFileSync(path.resolve(root, filename), 'utf8').split(/\r?\n/).forEach((line, index) => {
-    if (/^\[.+\]$/.test(line)) { section = line.slice(1, -1); sections[section] ||= []; ids = []; }
+    if (/^\[.+\]$/.test(line)) { section = line.slice(1, -1); sections[section] ||= []; ids = []; source = undefined; }
+    else if (/^# @source \w+$/.test(line)) { source = line.slice(10); ids = []; }
     else if (line.startsWith('#')) { ids.push(...(line.match(/S\d{4}/g) || [])); }
     else if (line.trim() && section) {
-      const entry = { line: index + 1, text: line, ids, tokens: splitQuoted(line) };
+      const entry = { line: index + 1, source, text: line, ids, tokens: splitQuoted(line) };
       if (section === 'Script') {
         const equals = line.indexOf('=');
         entry.name = line.slice(0, equals).trim();
@@ -46,6 +47,12 @@ function parseModule(name) {
     }
   });
   return sections;
+}
+// Behavioral fixtures select their original source group from the actual merged
+// artifact. This is a test view, never a second installable/generated module.
+function parseSource(name) {
+  return Object.fromEntries(Object.entries(parseModule('MoyuAds')).map(([section, entries]) =>
+    [section, entries.filter(entry => section === 'MITM' || entry.source === name)]));
 }
 function sourceActiveLines(name) {
   return fs.readFileSync(path.join(root, 'references/moyu-independent', name + '.conf'), 'utf8')
@@ -103,4 +110,4 @@ function validateSurge(names) {
     return result.stdout + result.stderr;
   } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 }
-module.exports = { root, splitQuoted, parseModule, sourceActiveLines, runJq, runScript, validateSurge };
+module.exports = { root, splitQuoted, parseModule, parseSource, sourceActiveLines, runJq, runScript, validateSurge };

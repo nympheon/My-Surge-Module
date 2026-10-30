@@ -1,3 +1,5 @@
+> 合并模块：本来源由 `../MoyuAds.sgmodule` 的对应 `# @source` 分组实现，运行脚本统一位于 `../js/`。历史独立模块描述保留作审计语境；原八个独立入口已替换为一个 MoyuAds 合集。
+
 # TieBa 源码映射与边界
 
 以 `references/moyu-independent/TieBaAds.conf` 的 2026-10-31 冻结快照为准。全部 8 条有效源行手工实现，URL 正则逐字保留；Sxxxx 是源文件物理行号。原脚本作者 app2smile，配置整理 ddgksf2013。
@@ -68,9 +70,9 @@ Surge 原生 Body Rewrite 使用平台自身体积限制；脚本的 1 MiB 限�
 
 手工移植墨鱼 TieBaAds 配置的全部 8 条有效规则，以及配置实际调用的 app2smile protobuf 净化分支。包含搜索、抽屉、我的页等完整界面净化；普通视频帖子默认保留。
 
-- 模块：[TieBaAds.sgmodule](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/TieBaAds/TieBaAds.sgmodule)
+- 模块：[MoyuAds.sgmodule](https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/MoyuAds/MoyuAds.sgmodule)
 - 支持语法：Surge Mac 5.9.0+ / iOS 5.14.0+。
-- 独立脚本：[js/tieba-proto.js](js/tieba-proto.js)，资源属于本模块，无远程加载器或第三方依赖。
+- 独立脚本：[js/tieba-proto.js](../js/tieba-proto.js)，资源属于本模块，无远程加载器或第三方依赖。
 - HTTPS 改写需要用户已有的 MITM 与证书信任配置；模块只追加 `tieba.baidu.com, tiebac.baidu.com`。
 
 二进制脚本只编辑明确识别的 protobuf 字段，保留其余原始字节、未知字段、顺序与 64 位整数。只处理 HTTP 200；未知命令、字段 wire 类型不符、损坏帧或超限整体放行。体积上限 1 MiB，超时 5 秒。详细字段、边界与原行为差异见本文。
