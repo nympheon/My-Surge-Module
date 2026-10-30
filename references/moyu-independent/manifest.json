@@ -1,0 +1,121 @@
+{
+  "retrieved": "2026-10-31",
+  "scope": "Full upstream purification behavior, selected by user",
+  "modules": [
+    {
+      "name": "AmapAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/AmapAds.conf",
+      "sha256": "d0c1caf909e3e9151ec890eb31bc14dc28b34c49d6c8a1ef42c147cd949564b3",
+      "scripts": [
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js"
+      ],
+      "active_lines": 19
+    },
+    {
+      "name": "Applet",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/Applet.conf",
+      "sha256": "6259647585e993f4b28897e8cba3b96366a775ed8f897b87d6cf8547e7ae28f0",
+      "scripts": [
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/applet.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/zhangshanggongjiao.js"
+      ],
+      "active_lines": 5
+    },
+    {
+      "name": "BiliBiliComicsAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/BiliBiliComicsAds.conf",
+      "sha256": "43f979729075573c453bc7bde7e5433a959e9f25b4cb653564b7670127399976",
+      "scripts": [],
+      "active_lines": 20
+    },
+    {
+      "name": "CainiaoAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/CainiaoAds.conf",
+      "sha256": "c45b9717c6f474b652a2c8c49f0cb224c2592d222912932ffd127455c257ab6c",
+      "scripts": [
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js",
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/cainiao_json.js"
+      ],
+      "active_lines": 13
+    },
+    {
+      "name": "CheLaiLeAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/CheLaiLeAds.conf",
+      "sha256": "bed409e93bba662cb18bdccfa94623e8cdc77ceecc4f877a684dda20a8d083ff",
+      "scripts": [
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/chelaile.js"
+      ],
+      "active_lines": 8
+    },
+    {
+      "name": "GoofishAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/GoofishAds.conf",
+      "sha256": "6112a98d133ccd602b6906e05c811f402ee1902a15b56397db9ebdde8d4321d1",
+      "scripts": [
+        "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js"
+      ],
+      "active_lines": 15
+    },
+    {
+      "name": "MoJiWeatherAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/MoJiWeatherAds.conf",
+      "sha256": "d0dad880065abc642de05d5d11923bbbdbcfd4cceb351dd5a93823761e967095",
+      "scripts": [],
+      "active_lines": 8
+    },
+    {
+      "name": "TieBaAds",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/TieBaAds.conf",
+      "sha256": "377b0d3379329cf29c52dc081c565b4d7efa190d5a54f2a035736297f412aaf4",
+      "scripts": [
+        "https://raw.githubusercontent.com/app2smile/rules/master/js/tieba-proto.js"
+      ],
+      "active_lines": 8
+    }
+  ],
+  "scripts": [
+    {
+      "name": "tieba-proto.js",
+      "url": "https://raw.githubusercontent.com/app2smile/rules/master/js/tieba-proto.js",
+      "bytes": 97069,
+      "sha256": "6015d737870b6d89c38a0181479ed715e07d11b5a2c3746f96f95e25835e8610"
+    },
+    {
+      "name": "amap.js",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js",
+      "bytes": 11559,
+      "sha256": "936aaaf97cf69b8a5a25ba49303c0470a16ac48851e8bf58080ff9f129ff7c48"
+    },
+    {
+      "name": "amdc.js",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js",
+      "bytes": 633,
+      "sha256": "8217f2150f8d12ae04d2c49b5da0a838e83f4de68b34df71c2da16cc1267898f"
+    },
+    {
+      "name": "applet.js",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/applet.js",
+      "bytes": 793,
+      "sha256": "0e2ffdd010b7f1ee38c526af5b7842f8fe3af89bf7ccd298596025baa4471855"
+    },
+    {
+      "name": "cainiao_json.js",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/cainiao_json.js",
+      "bytes": 1805,
+      "sha256": "508701b04e3289d37d9baa649dce8a317329b21ebd4433872dc7906866bcdd5c"
+    },
+    {
+      "name": "chelaile.js",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/chelaile.js",
+      "bytes": 5360,
+      "sha256": "5ac31e6d28f37526c61efac734e34211a55e4afde5f5bb8bea94eaa543c04e95"
+    },
+    {
+      "name": "zhangshanggongjiao.js",
+      "url": "https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/zhangshanggongjiao.js",
+      "bytes": 989,
+      "sha256": "0a2ebfbf41ed4b7dbd39f4aa50616ac42cd59d5eb0baa026fc1b98e7a4f5a8bb"
+    }
+  ]
+}
