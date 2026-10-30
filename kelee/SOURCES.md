@@ -1,8 +1,25 @@
 # 来源与手工调整
 
+## 2026-10-31 新增来源
+
+用户新增墨迹天气、360 智慧生活；丰巢明确排除。原始两份 Loon 配置冻结于 `references/kelee-additions/`，来源均为 `Moli-X/Tool` 提交 `bf9be1b5fbc9a1d566d028c7e7a2c0d883ab027d` 的 `Loon/Plugin/Kelee/`。
+
+| 来源文件 | 原始 SHA-256 | 手工映射 |
+| --- | --- | --- |
+| `MojiWeather_remove_ads.plugin` | `f45cb96f50e5b46668a3833e36104b19c49f3e04b38888814e399919558d66bc` | 6 个拦截 URL 合并成 3 条 Map Local；保留 404 空正文与 200 空 JSON 的区别；个人页 1 条原生 JQ |
+| `SafetyHome_remove_ads.plugin` | `b6a31d0521be0ae8d69ba22856bdc3745f31de06b9b46b0e9b3b627884102750` | 1 条 Map Local 返回 200 空 JSON；`ad.iot.360.cn` 已在原通用域名规则中，复用而不重复 |
+
+墨迹 JQ 保留“皇冠区域”“banner区”的整区域删除以及“墨迹钱包”“墨圈”的入口删除。遇到缺失、null 或未知结构时保留原值。MITM 只补实际规则所需的 `fcard.api.moji.com`、`vdo.api.moji.com`、`sns.api.moji.com`、`mme.api.moji.com` 和 `app.home.360.cn`，未添加源中无有效规则的 `psnlz.api.moji.com`。
+
+新增受控样例：`node --test kelee/checks/additions.test.cjs`。既有 `MoyuAds` 也包含墨迹，范围和返回类型与本来源不同；同时启用时，重叠 Map Local 的生效顺序由设备上的模块优先级决定，不能宣称二者叠加后的效果与单模块一致。
+
+YouTube 按用户要求另设 `kelee-YouTube` 模块，不进入此合集；其来源、Worker 依赖和检查见 `../kelee-YouTube/SOURCES.md`。当前完整选定清单共 57 项，其中本合集 54 项、HTTPDNS/京东比价/YouTube 各独立一项。
+
+新增原生部分有 4 个行为测试，既有 77 项脚本断言和 31 组 JQ 样例继续保留。四个 kelee 模块的校验包含 142 条 JQ、15 个 JS 文件和 17 个仓库运行资源引用。根回归中曾有一条要求 kelee 每个文件与历史完全相同的保护测试；用户明确要求删除，本次已删除该历史字节锁定测试及临时替代的增量锁定测试，保留实际行为、资源引用和语法检查。最终通过情况以本次实际运行记录为准，均不等同于真实 App 流量验收。
+
 ## 固定来源
 
-- 原始项目：[可莉](https://github.com/luestr/ProxyResource/blob/main/README.md)，原清单链接见附带的 54 项清单。
+- 原始项目：[可莉](https://github.com/luestr/ProxyResource/blob/main/README.md)，初次转换为 54 项；当前清单见 `selected-plugins.txt`，新增来源见上节。
 - 主要可读镜像：[bunizao/Mirrored](https://github.com/bunizao/Mirrored/tree/a8e1cbf97a2298a5f64412fcd1c6deb11d5de4f6/Chores)，固定提交 `a8e1cbf97a2298a5f64412fcd1c6deb11d5de4f6`。下载时核对了 Git blob 哈希。
 - 原 Loon 对照：[Moli-X/Tool](https://github.com/Moli-X/Tool/tree/bf9be1b5fbc9a1d566d028c7e7a2c0d883ab027d/Loon/Plugin/Kelee)，固定提交 `bf9be1b5fbc9a1d566d028c7e7a2c0d883ab027d`。其中可读的 41 项用于交叉检查，QQ 条件重定向从此恢复。
 - 顺丰完整静态响应：[QingRex/LoonKissSurge](https://github.com/QingRex/LoonKissSurge/blob/913ec005f544221e6c56a7d0ecec81c4b3b914bb/Surge/%E9%A1%BA%E4%B8%B0%E9%80%9F%E8%BF%90%E5%8E%BB%E5%B9%BF%E5%91%8A.sgmodule)。保留完整 JSON，未自行重造寄件服务项目。
@@ -13,7 +30,7 @@
 
 ## 合并和优化
 
-| 项目 | 来源镜像合计 | 最终三模块合计 |
+| 项目 | 首次 54 项来源镜像合计 | 首次转换后三模块合计 |
 | --- | ---: | ---: |
 | Rule | 637 | 550 |
 | Body Rewrite | 294 | 142，其中 JQ 141 条 |

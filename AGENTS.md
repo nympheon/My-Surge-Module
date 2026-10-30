@@ -33,9 +33,10 @@ https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/
 | --- | --- | --- |
 | `MoyuAds/MoyuAds.sgmodule` | `MoyuAds/js/`，5 个 JS | 墨鱼八来源完整净化合集，替换原八个独立入口 |
 | `StartUpAds/StartUpAds.sgmodule` | `StartUpAds/js/`，19 个 JS | 墨鱼去开屏合集的 Surge 手工移植 |
-| `kelee/kelee.sgmodule` | `kelee/js/`，11 个 JS；`kelee/resources/`，3 个静态资源 | 已选 52 项可莉插件的集合，含外链功能和页面精简 |
+| `kelee/kelee.sgmodule` | `kelee/js/`，11 个 JS；`kelee/resources/`，3 个静态资源 | 已选 54 项可莉插件的集合，含外链功能和页面精简 |
 | `kelee-HTTPDNS/kelee-HTTPDNS.sgmodule` | 无 JS | 可莉 `Block_HTTPDNS` |
 | `kelee-JDPrice/kelee-JDPrice.sgmodule` | `kelee-JDPrice/js/JD_Price.js` | 慢慢买参数捕获、京东商品页比价 |
+| `kelee-YouTube/kelee-YouTube.sgmodule` | `kelee-YouTube/js/`，2 个 JS | 独立 YouTube 去广告与原插件增强，保留经用户同意的作者 Worker |
 
 不要把本地文件系统路径写回 `script-path`、Map Local 的资源地址或正文内的图片 URL。这里的仓库托管只针对脚本和静态资源下载地址：URL 正则匹配的业务主机、慢慢买等实际 API 地址仍是目标服务，不能一起替换成仓库 URL。不要把这些既有入口合并、重命名或替换成第三方动态转换链接。
 
@@ -49,7 +50,7 @@ https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/
 
 特别注意 `tests/merged-module.test.js` 固定读取合并前 `74662af` 的旧路径，合法更新也会触发规则/JS 原文相等断言。不能直接把 base 换成已删除旧路径的当前提交，不能仅为测试变绿删除保护；按操作手册为允许的变化建立新行为样例和明确基线。根 integration 另固定 StartUpAds 的 `63268de` 字节身份。当前 96 源行、5 JS、7 Script 是基线统计，未来有意变更时逐项审查并维护，不能把数量当成永久业务目标。
 
-用户要求仓库中八来源只保留一个合集；StartUpAds 和三个 kelee 产品继续独立。仓库维护、下载回读、离线解析均不意味着安装/启用 Surge；不得顺带切换用户设备模块、改在线配置或证书。
+用户要求仓库中八来源只保留一个 MoyuAds 合集；StartUpAds 和 kelee 系列继续独立，其中 YouTube 按本次要求独立为 `kelee-YouTube`。仓库维护、下载回读、离线解析均不意味着安装/启用 Surge；不得顺带切换用户设备模块、改在线配置或证书。
 
 ## 阅读顺序
 
@@ -128,8 +129,10 @@ $HOME/Documents/Codex/2026-10-30/c/work/My-Surge-Module/
 
 ## kelee 系列的来源与范围
 
-- 最初选择 55 项，后来用户删除“防 DNS 泄漏”，最终为 54 项。
-- 其中 `Block_HTTPDNS` 和 `JD_Price` 分开发布，其余 52 项进入 `kelee`。
+- 最初选择 55 项，后来用户删除“防 DNS 泄漏”，形成 54 项基线；2026-10-31 新增墨迹天气、360 智慧生活和 YouTube，目前为 57 项。
+- `Block_HTTPDNS`、`JD_Price`、`YouTube_remove_ads` 分别独立发布，其余 54 项进入 `kelee`。丰巢已明确排除。新增来源冻结于 `references/kelee-additions/`，映射及校验入口见 `kelee/SOURCES.md` 与 `kelee-YouTube/SOURCES.md`。
+- 用户明确要求 YouTube 独立模块，并在得知加密播放初始化请求会经过作者 `init-stream.maasea.workers.dev` 后，选择保留原源完整行为。不要把该运行服务依赖误写成仅下载两个 JS。更新时须重新核对引用链，不能默认服务端行为已审计。
+- 2026-10-31 用户明确要求删除将 kelee 文件锁定到历史字节的保护测试；该测试和临时替代的增量锁定测试均已删除。后续维护使用实际行为、资源引用和语法检查，不恢复这条历史锁定。
 - `Weixin_external_links_unlock`、`QQ_Redirect` 已明确选择，必须保留。
 - 依赖无法取得的外部 `jq_file` 的高德、哔哩哔哩、Reddit 等项目未加入。哔哩哔哩漫画是另一项已选来源，不能混淆。
 - 主要可读镜像：`bunizao/Mirrored`，基线提交 `a8e1cbf97a2298a5f64412fcd1c6deb11d5de4f6`，文件位于 `Chores/sgmodule/`、`Chores/js/`。
@@ -182,15 +185,18 @@ npm run test:jsc
 python3 kelee/checks/validate.py
 node kelee/checks/runtime.cjs
 python3 kelee/checks/jq.py
+node --test kelee/checks/additions.test.cjs
+node --test kelee-YouTube/checks/youtube.test.cjs
+npm test
 git diff --check
 ```
 
 - 根 npm 测试读取真实 MoyuAds 和模块自有 JS；无 npm 第三方依赖，不需要先 npm install。需要 Node 18+、jq、macOS Surge CLI，JSC 重放另需 Swift 与系统 JavaScriptCore。详见 MoyuAds/MAINTENANCE。
-- `validate.py`：只检查三个 kelee 模块，校验本仓库资源引用、单独/组合 Surge 语法、JQ 编译、JS 语法和静态资源格式。
+- `validate.py`：检查四个 kelee 模块（含独立 YouTube），校验本仓库资源引用、单独/组合 Surge 语法、JQ 编译、JS 语法和静态资源格式。
 - `runtime.cjs`：读取当前仓库脚本，所有网络、通知和持久化均为替身；包含独立目录的京东比价脚本。
 - `jq.py`：执行当前 kelee 原生 JQ，覆盖 IT之家参数、正常内容保留及已修正的真假值差异。
-- 这些都是验证程序，不是模块转换器。它们**不验证 StartUpAds，也不安装或启用模块**。
-- 校验器目前写死了 15 个运行资产的基线断言。若本次确实新增/删除资产，需要审核新的预期数量和引用后再更新断言，不得为“变绿”直接删除检查。
+- `kelee/checks/` 与 `kelee-YouTube/checks/` 都是验证程序，不是模块转换器；它们不负责 StartUpAds。根 `npm test` 有该产品的部分语法/保留检查，不等于旧完整测试框架。这些命令均不安装或启用模块。
+- 校验器原有 15 个运行资产；本次经审核添加两个 YouTube JS，目前断言为 17。后续确实新增/删除资产时，需审核新的预期数量和引用再更新断言，不得为“变绿”直接删除检查。
 - Surge `--check` 面向完整配置。含 Rule 的模块需要在临时完整配置中补 FINAL；发布模块自身不能含 FINAL。临时验证可把远程资源替换成对应本地文件，以检查本次候选内容。
 - Git 暂存后的变更还需 `git diff --cached --check`，并核对精确文件列表。
 

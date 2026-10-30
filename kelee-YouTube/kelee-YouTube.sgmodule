@@ -1,0 +1,18 @@
+#!name=kelee-YouTube
+#!desc=YouTube / YouTube Music 去广告与原插件增强。JS 由本仓库托管；特定加密播放初始化请求仍经作者 init-stream.maasea.workers.dev 处理。需要启用脚本与相应 HTTPS 解密，不支持 tvOS。
+#!author=Maasea、VirgilClyne、Choler、DivineEngine、app2smile；可莉原插件；Surge 手工适配
+#!arguments=BlockUpload:false,BlockShorts:false,BlockImmersive:false,CaptionLang:zh-Hans
+#!arguments-desc=BlockUpload、BlockShorts、BlockImmersive 控制隐藏对应底栏按钮，填写 true/false；CaptionLang 可填 zh-Hans、zh-Hant、ja、ko、en 或 off。保留原 Loon 默认值。启用本模块表示接受描述中的作者 Worker 依赖。
+
+# 来源：Moli-X/Tool，bf9be1b5fbc9a1d566d028c7e7a2c0d883ab027d。
+# 普通视频/推荐/搜索/Shorts 的 Protobuf 过滤在本机执行；initplayback 的 Worker 分支保留源逻辑。
+# 只配置目标主机，不覆盖证书或全局 HTTP/2 / QUIC 设置。需在设备上确保目标请求实际进入 HTTP 引擎。
+# 避免与其他处理相同 YouTube 接口的响应脚本同时启用：每个方向只有首个匹配脚本执行。
+
+[Script]
+KeleeYouTube-Response = type=http-response, pattern=(?i)^https://youtubei\.googleapis\.com/youtubei/v1/(?:browse|next|player|search|reel/reel_watch_sequence|guide|account/get_setting|get_watch|log_event|config)(?:\?.*)?$, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee-YouTube/js/YouTube_remove_ads_response.js, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, argument="{"captionLang":"{{{CaptionLang}}}","blockUpload":{{{BlockUpload}}},"blockImmersive":{{{BlockImmersive}}},"blockShorts":{{{BlockShorts}}}}"
+KeleeYouTube-Init = type=http-request, pattern=(?i)^https?://[\w-]+\.googlevideo\.com/initplayback.+&ack.*, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee-YouTube/js/YouTube_remove_ads_request.js, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, argument="{"captionLang":"{{{CaptionLang}}}","blockUpload":{{{BlockUpload}}},"blockImmersive":{{{BlockImmersive}}},"blockShorts":{{{BlockShorts}}}}"
+KeleeYouTube-LogEvent = type=http-request, pattern=(?i)^https://youtubei\.googleapis\.com/youtubei/v1/log_event, script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/kelee-YouTube/js/YouTube_remove_ads_request.js, requires-body=true, binary-body-mode=true, max-size=-1, timeout=10, argument="{"captionLang":"{{{CaptionLang}}}","blockUpload":{{{BlockUpload}}},"blockImmersive":{{{BlockImmersive}}},"blockShorts":{{{BlockShorts}}}}"
+
+[MITM]
+hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com

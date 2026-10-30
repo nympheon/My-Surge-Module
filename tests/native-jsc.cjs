@@ -18,7 +18,7 @@ function encodeBoundary(value) {
 }
 function replayFixtures(fixtures) {
   assert.ok(fixtures.length, 'No owned-script fixtures captured');
-  const input = fixtures.map(fixture => ({...fixture, source:fs.readFileSync(path.join(root, fixture.path),'utf8')}));
+  const input = fixtures.map(fixture => ({...fixture, source:(fixture.setup || '') + '\n' + fs.readFileSync(path.join(root, fixture.path),'utf8')}));
   const result = spawnSync('/usr/bin/swift', [path.join(__dirname,'helpers/jsc-runner.swift')], {
     input:JSON.stringify(input), encoding:'utf8', timeout:60000, maxBuffer:128 * 1024 * 1024,
     env:{...process.env, CLANG_MODULE_CACHE_PATH:path.join(os.tmpdir(),'surge-jsc-clang-cache'), SWIFT_MODULECACHE_PATH:path.join(os.tmpdir(),'surge-jsc-swift-cache')}

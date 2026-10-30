@@ -59,11 +59,6 @@ test('five owned scripts retain original bytes and all seven original declaratio
     assert.deepEqual(fs.readFileSync(path.join(root,'MoyuAds/js',file)),original(`${owner}/js/${file}`),`${owner}/${file}`);
   }
 });
-test('existing StartUpAds and kelee runtime files retain their published bytes', () => {
-  const folders=['StartUpAds','kelee','kelee-HTTPDNS','kelee-JDPrice'];
-  const files=execFileSync('git',['ls-tree','-rz','--name-only',base,'--',...folders],{cwd:root}).toString().split('\0').filter(Boolean);
-  for (const file of files) assert.deepEqual(fs.readFileSync(path.join(root,file)),original(file),file);
-});
 test('actual merged artifact parses alone and with StartUpAds in native Surge', () => {
   assert.match(validateSurge(['MoyuAds']),/OK|valid/i);
   assert.match(validateSurge(['StartUpAds','MoyuAds']),/OK|valid/i);

@@ -4,7 +4,7 @@ import hashlib, json, re, shutil, subprocess, tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = 'https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/'
-MODULES = [ROOT/name/(name+'.sgmodule') for name in ['kelee','kelee-HTTPDNS','kelee-JDPrice']]
+MODULES = [ROOT/name/(name+'.sgmodule') for name in ['kelee','kelee-HTTPDNS','kelee-JDPrice','kelee-YouTube']]
 CLI = shutil.which('surge-cli') or '/Applications/Surge.app/Contents/Applications/surge-cli'
 report = {'modules':{},'runtime_assets':{},'jq_expressions':0,'javascript_files':0}
 combined = {}
@@ -66,7 +66,8 @@ with tempfile.TemporaryDirectory(prefix='surge-kelee-check-') as temporary:
         assert result.returncode == 0, result.stdout+result.stderr
         report['modules'][module.relative_to(ROOT).as_posix()] = {'syntax':'PASS','sections':{k:len(v) for k,v in sections.items()}}
 
-    assert len(report['runtime_assets']) == 15
+    # Original 15 assets plus the two explicitly selected, independently hosted YouTube scripts.
+    assert len(report['runtime_assets']) == 17
     all_names = [line.split('=',1)[0].strip() for line in combined.get('[Script]',[])]
     assert len(all_names) == len(set(all_names)), 'Cross-module script name collision'
     fixture = ['[General]','loglevel = notify']
@@ -81,7 +82,7 @@ with tempfile.TemporaryDirectory(prefix='surge-kelee-check-') as temporary:
     assert result.returncode == 0, result.stdout+result.stderr
     report['combined_syntax'] = 'PASS'
 
-for folder in ['kelee/js','kelee/resources','kelee-JDPrice/js']:
+for folder in ['kelee/js','kelee/resources','kelee-JDPrice/js','kelee-YouTube/js']:
     for file in (ROOT/folder).glob('*.js'):
         result = subprocess.run(['node','--check',str(file)],capture_output=True,text=True)
         assert result.returncode == 0, result.stderr
