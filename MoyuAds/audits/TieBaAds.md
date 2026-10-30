@@ -62,9 +62,9 @@ Surge 原生 Body Rewrite 使用平台自身体积限制；脚本的 1 MiB 限�
 
 ## 验证范围
 
-`tests/tieba.test.js` 检验所有源行映射、实际 jq、原生 Surge 完整临时配置解析、各入口的手工 byte fixtures、冻结原脚本语义对照、重复 singular/last-scalar-wins、未知字段与 uint64、128 字节长度边界、1 MiB 边界、预算/坏帧回退、已知字符串 UTF-8 验证，并在 macOS JavaScriptCore 执行相同发布脚本。共存检查组合本阶段已完成的六个模块。
+`tests/tieba.test.js` 检验所有源行映射、实际 jq、原生 Surge 完整临时配置解析、各入口的手工 byte fixtures、冻结原脚本语义对照、重复 singular/last-scalar-wins、未知字段与 uint64、128 字节长度边界、1 MiB 边界、预算/坏帧回退、已知字符串 UTF-8 验证，并在 macOS JavaScriptCore 执行相同发布脚本。早期分项阶段验证过六模块组合；当前发布入口为一个 MoyuAds，根测试检查真实合集与 StartUpAds 的临时完整配置。
 
-这些是本地离线和运行时夹具证据，不是 iOS、旧版本 Surge 或真实 App 验收。本阶段未启用任何模块、改变证书或用户 live profile，未推送发布。
+这些是本地离线和运行时夹具证据，不是 iOS、旧版本 Surge 或真实 App 验收。分项移植阶段没有启用模块或更改证书/live profile；随后合并版已在 0d9342e 发布，详见 SOURCES 和 MAINTENANCE。
 
 ## 使用与验证边界
 
@@ -79,4 +79,4 @@ Surge 原生 Body Rewrite 使用平台自身体积限制；脚本的 1 MiB 限�
 
 来源：[ddgksf2013 / TieBaAds.conf](https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/TieBaAds.conf)、[app2smile / tieba-proto.js](https://raw.githubusercontent.com/app2smile/rules/master/js/tieba-proto.js)。冻结快照在仓库 `references/moyu-independent/`，仅作离线审计与测试 oracle，不由模块运行。
 
-本地已验证真实 jq、字节级 fixtures、原脚本语义对照、macOS JavaScriptCore 和 Surge 原生配置解析。未启用用户配置，未完成 iOS、旧版本设备或真实 App 全流程验收。上方链接是发布目标；本任务未推送，也未核验远端字节。
+本地已验证真实 jq、字节级 fixtures、原脚本语义对照、macOS JavaScriptCore 和 Surge 原生配置解析。未启用用户配置，未完成 iOS、旧版本设备或真实 App 全流程验收。合并版已在 0d9342e 发布，模块与五份运行 JS 已逐字节回读；以后更新仍需重新核验。

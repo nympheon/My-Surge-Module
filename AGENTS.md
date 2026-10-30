@@ -1,14 +1,14 @@
 # My-Surge-Module：AI 维护交接
 
-本文件供后续 AI 更新上游规则时读取，不是面向订阅者的 README。形成日期：2026-10-31。
+本文件供后续 AI 更新上游规则时读取，不是面向订阅者的 README。维护核对日期：2026-10-31。
 
 ## 先确认当前状态
 
 - 仓库：`https://github.com/nympheon/My-Surge-Module`，发布分支为 `main`。
-- 本文件形成时，最后已发布提交为 `6ccf2ba7ba12f9cc05e1fa7e69fc3301852cfd45`，内容是删除四份 README。
-- 更早的发布提交：`63268de` 发布 StartUpAds；`ecb111c` 发布三个 kelee 模块。提交缩写仅供定位，不能当作未来最新状态。
+- 本次文档增补前核对的运行代码发布基线为 `0d9342efba3019f0814ee65f8a69202fe977ce61`：八个墨鱼独立模块已合为 MoyuAds，原八运行目录已删除。这是运行代码的历史锚点，未来必须重新核对远端，不能当作永远最新的 HEAD。
+- 历史节点：`63268de` 发布 StartUpAds；`ecb111c` 发布三个 kelee 模块；`74662af` 包含合并前八个独立墨鱼模块；`0d9342e` 合并为一个 MoyuAds。完整锚点见各模块维护说明。
 - 开始工作先运行 `git status --short`、`git log`、`git fetch` 并核对远端。保留已有未提交内容；需要时使用独立检出，不把其他会话的改动带入。
-- 用户先审阅本文件，随后于 2026-10-31 明确授权将 `AGENTS.md` 提交并推送。后续任务按用户当次指令决定是否发布。
+- 本次用户要求直接完善现有交接文件，供未来 AI 维护。后续任务按当次要求确定本地/发布范围；已有明确授权就继续完成，不重复询问同一授权。仓库发布授权不包含设备配置操作。
 - 用户已删除所有 README，不要在常规更新中重新创建宣传、安装介绍类 README。
 
 ## 用户已经确认的维护方式
@@ -39,23 +39,25 @@ https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/
 
 不要把本地文件系统路径写回 `script-path`、Map Local 的资源地址或正文内的图片 URL。这里的仓库托管只针对脚本和静态资源下载地址：URL 正则匹配的业务主机、慢慢买等实际 API 地址仍是目标服务，不能一起替换成仓库 URL。不要把这些既有入口合并、重命名或替换成第三方动态转换链接。
 
-## 墨鱼八来源合并模块
+## MoyuAds：后续更新的入口
 
-用户随后明确要求把八个独立模块合并为一个入口。统一入口为 `MoyuAds/MoyuAds.sgmodule`，覆盖 AmapAds、Applet、BiliBiliComicsAds、CainiaoAds、CheLaiLeAds、GoofishAds、MoJiWeatherAds、TieBaAds。保留完整净化、96 条来源映射和七条原 Script 声明；三份字节相同 AMDC 文件合为一个，配套五个运行 JS 均位于 `MoyuAds/js/`。原脚本匹配条件和各节内顺序保持不变，单个 MITM `%APPEND%` 使用原主机去重并集。用户这次要求替换八入口，覆盖之前保持这八个入口名称稳定的约定。
+- [来源与实现映射](MoyuAds/SOURCES.md)：八配置/七原脚本的固定版本、SHA-256 入口、原生 JQ 与五份运行 JS 的对应关系、必须延续的修正。
+- [更新操作手册](MoyuAds/MAINTENANCE.md)：逐条比较与手工更新、冻结来源/ID 的维护、测试基线陷阱、检查命令、发布回读和下一次交接。
+- [逐来源审计](MoyuAds/audits)：完整 96 条映射与已确认差异；[兼容性与共存](docs/compatibility.md)；[行为索引](docs/moyu-independent-modules.md)。
 
-用户先要求“不要改我的 Surge，你先只做模块”，随后明确要求“仓库里也只保留一个模块”，因此本次授权将这八个独立入口在仓库中替换为 MoyuAds 合集，并发布配套五份 JS。旧八个运行目录和模块入口删除，审计迁入 MoyuAds/audits；冻结来源保留。此授权只涉及仓库，不安装、切换设备模块或更改证书。设备订阅以后需移除旧八入口并添加一个合集，仓库变更不自动操作用户设备。StartUpAds 和三个 kelee 模块继续独立保留。
+当前一个 MoyuAds 入口覆盖高德、小程序、漫画、菜鸟、车来了、闲鱼、墨迹、贴吧；包含完整正常 UI/搜索/推荐精简，七条原 Script 声明共用五份自有 JS。`references/moyu-independent/manifest.json` 的 modules 是八个来源分组，不是八个待发布模块。不要恢复旧运行目录。`# @source` 与该分组下 Sxxxx 共同标识原配置物理行；上游插行后按 URL/阶段/动作识别，不按编号盲目覆盖。
 
-来源快照和 SHA-256 仍在 `references/moyu-independent/manifest.json`；每个来源审计在 `MoyuAds/audits/<来源名>.md`，`# @source` 与 Sxxxx 共同区分原始行号。总索引 `docs/moyu-independent-modules.md`、兼容性 `docs/compatibility.md`。根 `tests/` 通过实际合并模块的来源分组运行已有行为 fixtures；parseSource 只是测试视图，不生成或发布虚拟子模块。`tests/merged-module.test.js` 对照已发布 74662af 的规则、顺序、JS 字节和 MITM 并集。未来有意更新规则时应审查并更新相应基线，不能为保数字而删断言。
+特别注意 `tests/merged-module.test.js` 固定读取合并前 `74662af` 的旧路径，合法更新也会触发规则/JS 原文相等断言。不能直接把 base 换成已删除旧路径的当前提交，不能仅为测试变绿删除保护；按操作手册为允许的变化建立新行为样例和明确基线。根 integration 另固定 StartUpAds 的 `63268de` 字节身份。当前 96 源行、5 JS、7 Script 是基线统计，未来有意变更时逐项审查并维护，不能把数量当成永久业务目标。
 
-`npm test` 和 `npm run test:jsc` 服务于本合集及明确列出的 StartUpAds 重叠/字节身份检查，不是旧 StartUpAds 完整测试框架，也不替代 kelee/checks。合集与其他广告合集任意开关顺序没有全面验收；iOS、历史版本和各 App 实际流量仍未全量验收。原 StartUpAds、三个 kelee 模块及资源字节保持已发布版本；不重新创建 README。
+用户要求仓库中八来源只保留一个合集；StartUpAds 和三个 kelee 产品继续独立。仓库维护、下载回读、离线解析均不意味着安装/启用 Surge；不得顺带切换用户设备模块、改在线配置或证书。
 
 ## 阅读顺序
 
-1. 本文件。
-2. `kelee/SOURCES.md`：固定上游提交、作者、已修正缺陷、返回类型和重叠规则的取舍。
-3. `kelee/selected-plugins.txt`：用户选定的 54 个来源名称和原始 URL。
-4. 本次涉及的 `.sgmodule`、其运行 JS/静态资源及对应 `kelee/checks/` 样例。
-5. 更新 StartUpAds 时，再阅读下面的专门说明；不能把 kelee 的测试覆盖外推到 StartUpAds。
+1. 本文件，然后确认当前 Git/远端与本次用户范围。
+2. 更新 MoyuAds：SOURCES、MAINTENANCE、相关来源 audit、实际模块/JS、相关 tests；这些文件都在仓库，不依赖旧机器或临时日志。
+3. 更新 kelee：`kelee/SOURCES.md`、`kelee/selected-plugins.txt`、受影响模块/资源和 kelee/checks；不把 root tests 的结论外推到这组模块。
+4. 更新 StartUpAds：先读下节，确认旧资料是否实际存在；根测试没有它全部 19 份脚本的完整原始框架。不要依据缺失路径编造历史验证。
+5. `docs/superpowers/` 是历史设计/计划背景，不是当前发布状态；其中未勾选步骤或过去的本地限制不覆盖最新用户指令与实际远端证据。
 
 ## StartUpAds 的来源与基线
 
@@ -100,7 +102,7 @@ https://raw.githubusercontent.com/ddgksf2013/Scripts/master/<文件名>
 
 ### StartUpAds 的历史资料在哪里
 
-StartUpAds 的以下**旧版完整**源快照和测试框架未迁入发布仓库（新独立模块的 tests/package.json 不属于这套旧框架）：
+StartUpAds 的以下**旧版完整**源快照和测试框架未迁入发布仓库（仓库根目录的 tests/ 和 package.json 服务于 MoyuAds，不属于这套旧框架）：
 
 ```text
 references/moyu/StartUpAds.conf
@@ -109,10 +111,10 @@ references/moyu/scripts/             25 个冻结上游 JS
 docs/startup-rule-audit.md
 docs/script-audit.json
 docs/COMPATIBILITY.md
-tests/、package.json（旧 StartUpAds 完整框架，非新增独立模块测试）
+tests/、package.json（旧 StartUpAds 完整框架，非当前 MoyuAds 测试）
 ```
 
-这些仍保留在旧本地工作区。当前机器可检查：
+完整旧资料没有一起迁入仓库。维护时可在本机尝试检查下面的历史位置，但未来 AI 不能假设新机器存在这个路径，也不能依赖该路径才能维护 MoyuAds：
 
 ```text
 $HOME/Documents/Codex/2026-10-30/c/work/My-Surge-Module/
@@ -158,12 +160,12 @@ $HOME/Documents/Codex/2026-10-30/c/work/My-Surge-Module/
 ## 更新上游时的工作步骤
 
 1. **确认范围和基线**：本次更新哪个模块、用户是否授权新增插件/功能、是否只本地审阅。先保存当前 Git 提交和上游快照/哈希。
-2. **分别比较配置与依赖**：同一个配置 URL 没变化，引用 JS、JQ、图片、静态 JSON 仍可能变化；需要核对引用链，不只看头部更新时间。
+2. **分别比较配置与依赖**：同一个配置 URL 没变化，引用 JS、JQ、图片、静态 JSON 仍可能变化；先取到临时目录，与冻结基线逐字节比较，区分注释/地址变化和业务逻辑变化。记录实际引用链和固定提交/哈希，不只看头部更新时间。MoyuAds 的映射与特殊重命名见 SOURCES。
 3. **逐条列增删改**：按 URL 谓词、方法、请求/响应阶段、条件头、返回方式和参数判断，不只按应用名或正则文本去重。
 4. **手工修改**：保留本仓库已确认修正和用户选择。未知新结构优先保留原响应；不因为接口名称含广告词就拒绝整个公共业务接口。
 5. **维护依赖和引用**：只带需要的文件，保持各自模块目录和作者信息。脚本和静态资源下载地址应指向本仓库真实路径，核对大小写；业务 API 和匹配目标不在此列。
 6. **验证**：运行受影响的行为样例和语法检查，加入本次修复的正反案例。验证正常内容保留、缺字段/错误响应、单次 `$done`、返回类型、二进制完整性及 JS/JQ 语义。
-7. **记录与审阅**：更新源码版本/哈希和变更说明。报告实际修改与仍未验证的范围；用户要求先看时停在本地，不提交、不推送。
+7. **记录与审阅**：更新受影响快照/manifest、固定源码版本/哈希、来源 ID、审计和变更说明。保护未受影响来源的原字节。报告实际修改与仍未验证的范围；用户要求先看时停在本地，不提交、不推送。
 8. **获得发布授权后**：检查 diff、只提交本任务文件，以正常快进方式推送。远端推进先重新整合，不能强推覆盖别人改动。
 9. **发布后核验**：回读远端提交，再下载受影响的模块及其运行资源，与本地提交逐字节/哈希核对；不能只看到 push 成功就宣称订阅完整可用。
 
@@ -172,12 +174,18 @@ $HOME/Documents/Codex/2026-10-30/c/work/My-Surge-Module/
 在仓库根目录运行，需要 Python 3、Node.js、jq 和 Surge Mac CLI：
 
 ```sh
+# MoyuAds 及明确列出的 StartUpAds 身份/重叠检查
+npm test
+npm run test:jsc
+
+# kelee 三产品检查
 python3 kelee/checks/validate.py
 node kelee/checks/runtime.cjs
 python3 kelee/checks/jq.py
 git diff --check
 ```
 
+- 根 npm 测试读取真实 MoyuAds 和模块自有 JS；无 npm 第三方依赖，不需要先 npm install。需要 Node 18+、jq、macOS Surge CLI，JSC 重放另需 Swift 与系统 JavaScriptCore。详见 MoyuAds/MAINTENANCE。
 - `validate.py`：只检查三个 kelee 模块，校验本仓库资源引用、单独/组合 Surge 语法、JQ 编译、JS 语法和静态资源格式。
 - `runtime.cjs`：读取当前仓库脚本，所有网络、通知和持久化均为替身；包含独立目录的京东比价脚本。
 - `jq.py`：执行当前 kelee 原生 JQ，覆盖 IT之家参数、正常内容保留及已修正的真假值差异。
@@ -186,16 +194,19 @@ git diff --check
 - Surge `--check` 面向完整配置。含 Rule 的模块需要在临时完整配置中补 FINAL；发布模块自身不能含 FINAL。临时验证可把远程资源替换成对应本地文件，以检查本次候选内容。
 - Git 暂存后的变更还需 `git diff --cached --check`，并核对精确文件列表。
 
-形成交接时的已发布基线：
+2026-10-31 核对的运行代码基线（0d9342e，后续可能变化）：
 
 | 项目 | Rule | Body Rewrite | Map Local | URL Rewrite | Script 声明 |
 | --- | ---: | ---: | ---: | ---: | ---: |
+| MoyuAds | 4 | 51 | 32 | 2 | 7，引用 5 个 JS |
 | StartUpAds | 6 | 22 | 435 | 16 | 20，引用 19 个 JS |
 | kelee | 438 | 142 | 205 | 9 | 11 |
 | kelee-HTTPDNS | 112 | 0 | 6 | 0 | 0 |
 | kelee-JDPrice | 0 | 0 | 0 | 0 | 2，引用同一个 JS |
 
 2026-10-31 发布时三个 kelee 模块的证据为：141 条 JQ 编译、13 个 JS 语法、77 项脚本断言、31 组 JQ 样例通过；3 个模块与 15 个资源的 18 个 raw URL 均回读一致。这里的 13 个 JS 包括 12 个运行脚本和 1 个网页静态 JS。
+
+MoyuAds 合并发布基线的历史证据为：269 项根测试、230 次实际 JSC 调用通过；一个合集和五份 JS 的六个 raw 资源逐字节回读一致。根测试也验证实际 MoyuAds、StartUpAds 分别及组合的临时完整配置。没有逐一完成 iOS、历史版本或全部 App 真实流量验收。
 
 这些数字是历史基线，不是更新后必须维持的业务目标。不得通过删规则、删样例或硬编码输出维持数字。修改后必须重新运行适用检查，依据实际结果报告。
 

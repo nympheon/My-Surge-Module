@@ -1,6 +1,6 @@
 # Decoded Amap behavior map
 
-Manually inspected frozen `references/moyu-independent/scripts/amap.js`; analysis lookup notes live in the task handoff, while frozen bytes and manifest remain authority. Runtime contains native jq and a readable owned AMDC script only. The bogus obfuscator helper compares "tthFl" and "raOUd" and is unreachable; actual config-key matching is keywords.some(key.includes).
+Manually inspected frozen `references/moyu-independent/scripts/amap.js`; the committed [MoyuAds source audit](../../MoyuAds/audits/AmapAds.md) and [source map](../../MoyuAds/SOURCES.md) retain the handoff; frozen bytes and manifest remain authority. Runtime contains native jq and a readable owned AMDC script only. The bogus obfuscator helper compares "tthFl" and "raOUd" and is unreachable; actual config-key matching is keywords.some(key.includes).
 
 | Activated URL fragment | Expected transformation |
 |---|---|

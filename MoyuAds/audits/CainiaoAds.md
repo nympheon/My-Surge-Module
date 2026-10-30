@@ -24,7 +24,7 @@ Full healthy fixtures compare each native jq action with isolated frozen origina
 
 Any MTop ret string starting FAIL_ preserves the entire error envelope before cleanup, including target-shaped diagnostics. Merge children independently honor their own FAIL_ and explicit error markers, retaining failed children while allowing healthy siblings to be purified. Explicit error/errorMessage also passes through. code=1, marker-absent and errmsg="ok" healthy fixtures still transform; no universal code!=0 rule is imposed. Recognizable collection items require an object/string type discriminator; future/null entries preserve the whole corresponding collection. Unknown nested indexing errors retain original input via jq try/catch. Native malformed JSON is skipped by Surge.
 
-True JS truthiness is used for simple exact target keys, retaining false/0/empty-string/null rather than deleting them. Actual jq fixtures preserve non-target raw 9007199254740993123456789 and 0.1234567890123456789012345. No runtime package or JSON stringify precision loss. Independent AMDC is identical to the reviewed Task 1 equivalent: request phase, no body, case-insensitive UA header names, original UA value predicate, response 200/plain text ddgksf2013, timeout=5, exactly one done.
+True JS truthiness is used for simple exact target keys, retaining false/0/empty-string/null rather than deleting them. Actual jq fixtures preserve non-target raw 9007199254740993123456789 and 0.1234567890123456789012345. No runtime package or JSON stringify precision loss. Shared MoyuAds AMDC retains the reviewed behavior: request phase, no body, case-insensitive UA header names, original UA value predicate, response 200/plain text ddgksf2013, timeout=5, exactly one done.
 
 Original *.cainiao.com and the two Taobao MITM hosts are retained with %APPEND%; no global wildcard, CA or relaxed server verification. Native jq response limits are managed by Surge (1MB iOS, 10MB Mac), not script max-size. Local/native tests are not iOS or real-app acceptance. [Official native jq syntax](https://manual.nssurge.com/http/body-rewrite.html).
 
@@ -34,4 +34,4 @@ Original *.cainiao.com and the two Taobao MITM hosts are retained with %APPEND%;
 
 上游 ddgksf2013；逐条审计（本文）说明 13 条映射、四个 JSON 分支和 MTop 错误透传。AMDC 文件统一归属 MoyuAds 合集，三条原声明共用同一份脚本。上游另有未被配置启用的脚本分支，本模块没有激活它们。
 
-本机真实 jq 差分、数字精度、原生 Surge 配置检查和 AMDC 测试通过；未执行卸载重装、在线配置变更或 iOS/全应用验收。main 安装链接需发布后才会包含本次更新。
+本机真实 jq 差分、数字精度、原生 Surge 配置检查和 AMDC 测试通过；未执行卸载重装、在线配置变更或 iOS/全应用验收。合并发布基线为 0d9342e，模块与配套脚本已回读一致；以后更新需重新核验。
