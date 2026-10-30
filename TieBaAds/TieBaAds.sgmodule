@@ -1,0 +1,36 @@
+#!name=百度贴吧净化 · Surge 原生版
+#!desc=完整保留选中上游净化行为：搜索、抽屉、我的页、推荐及 protobuf 广告；Surge Mac 5.9.0+ / iOS 5.14.0+。
+#!author=nympheon；上游 ddgksf2013、app2smile
+#!homepage=https://github.com/nympheon/My-Surge-Module
+#!category=去广告
+#!date=2026-10-31
+# Source: https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/TieBaAds.conf
+# Frozen source: references/moyu-independent/TieBaAds.conf (2026-10-31).
+# Sxxxx maps physical source lines. Preserve all source predicates.
+
+[Rule]
+# S0019 | 原 IP 规则保留 DNS 解析匹配语义，不添加 no-resolve
+IP-CIDR,180.76.76.200/32,REJECT
+
+[Body Rewrite]
+# S0022 | 首页搜索、进吧搜索
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/search\/discover 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") and (.data | type) == "object" and (.data.discover_list | type) == "array" then .data.discover_list=[] else . end'
+# S0024 | 侧边抽屉栏
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/sidebar\/home 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") then del(.game_center, .tools, .vip_banner, .task_list) else . end'
+# S0026 | 我的页面：保留原完整净化和功能区筛选
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/u\/user\/profile 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") and (.zone_info | type) == "array" and all(.zone_info[]; type == "object" and (.type | type) == "string") then del(.duxiaoman, .namoaixud, .namoaixud_entry, .recom_naws_list, .duxiaoman_entry, .vip_banner) | .zone_info |= map(select(.type == "common_func" or .type == "auxiliary_func")) else . end'
+# S0028 | 进吧推荐搜索
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/forum\/forumGuide 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") and (.hot_search | type) == "array" then .hot_search=[] else . end'
+# S0030 | 搜索推荐
+http-response-jq ^https?:\/\/tieba(c)?\.baidu\.com\/mo\/q\/search\/startPage 'if type == "object" and ((has("error_code") | not) or .error_code == 0 or .error_code == "0") then del(.data) else . end'
+
+[Map Local]
+# S0032 | 原 reject-200：空 200 文本响应
+^https?:\/\/tieba(c)?\.baidu\.com\/c\/f\/ad\/getFeedAd data-type=text data=""
+
+[Script]
+# S0034 | 仅源配置激活的 protobuf 分支；默认保留普通视频帖子
+TieBa-Proto = type=http-response,pattern=^http(s:\/\/tiebac|:\/\/c\.tieba)\.baidu\.com\/c\/f\/(frs\/(page|threadlist|generalTabList)|pb\/page|excellent\/personalized)\?cmd,requires-body=true,binary-body-mode=true,max-size=1048576,timeout=5,script-path=https://raw.githubusercontent.com/nympheon/My-Surge-Module/main/TieBaAds/js/tieba-proto.js
+
+[MITM]
+hostname = %APPEND% tieba.baidu.com, tiebac.baidu.com

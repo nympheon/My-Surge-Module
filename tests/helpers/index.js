@@ -49,7 +49,7 @@ function parseModule(name) {
 }
 function sourceActiveLines(name) {
   return fs.readFileSync(path.join(root, 'references/moyu-independent', name + '.conf'), 'utf8')
-    .split(/\r?\n/).flatMap((text, index) => /^\^|^host(?:-suffix)?,|^ip(?:-cidr)?,/.test(text.trim())
+    .split(/\r?\n/).flatMap((text, index) => /^\^|^host(?:-suffix)?,|^ip(?:-cidr)?,/i.test(text.trim())
       ? [{ id: 'S' + String(index + 1).padStart(4, '0'), text: text.trim(), pattern: text.split(' url ')[0] }] : []);
 }
 function runJq(expression, body) {
@@ -61,9 +61,21 @@ function runJq(expression, body) {
 function runScript(relativePath, globals = {}) {
   const calls = [];
   const context = { ...globals, $done: value => calls.push(value) };
-  vm.runInNewContext(fs.readFileSync(path.join(root, relativePath), 'utf8'), context, { timeout: 1000 });
+  vm.createContext(context);
+  // Surge provides a realm-local Uint8Array. Recreate only the binary body, including
+  // the supplied view's bounds, while retaining the established globals signature.
+  const inputBody = globals.$response?.body;
+  if (ArrayBuffer.isView(inputBody) && Object.prototype.toString.call(inputBody) === '[object Uint8Array]') {
+    context.$response = { ...globals.$response, body: vm.runInContext(
+      `new Uint8Array(${JSON.stringify(Array.from(inputBody))})`, context, { timeout: 1000 }) };
+  }
+  vm.runInContext(fs.readFileSync(path.join(root, relativePath), 'utf8'), context, { timeout: 1000 });
   if (calls.length !== 1) throw new Error(`Expected one $done, got ${calls.length}`);
-  return JSON.parse(JSON.stringify(calls[0]));
+  const result = JSON.parse(JSON.stringify(calls[0]));
+  if (ArrayBuffer.isView(calls[0]?.body) && Object.prototype.toString.call(calls[0].body) === '[object Uint8Array]') {
+    result.body = Uint8Array.from(calls[0].body);
+  }
+  return result;
 }
 // Isolated full config, never a current-profile API. %APPEND% is resolved as module installation does.
 function validateSurge(names) {
