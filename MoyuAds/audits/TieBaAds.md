@@ -6,7 +6,7 @@
 
 | 源行 | 原行为 | 原生实现 |
 |---|---|---|
-| S0019 | 拒绝 180.76.76.200/32 | Rule `IP-CIDR,...,REJECT`；不添加 `no-resolve`，保留域名解析后 IP 匹配语义 |
+| S0019 | 拒绝 180.76.76.200/32 | Rule `IP-CIDR,...,REJECT,no-resolve`；不为匹配此规则主动解析 DNS，仍匹配直接访问 IP 或目标 IP 已解析的请求 |
 | S0022 | 清空首页、进吧搜索发现列表 | Body Rewrite jq，`.data.discover_list=[]` |
 | S0024 | 删除抽屉游戏中心、工具、VIP 横幅与任务列表 | Body Rewrite jq，保留原四个删除项 |
 | S0026 | 删除我的页六个推荐/VIP 字段；功能区只保留 common_func、auxiliary_func | Body Rewrite jq，保留完整原筛选，不缩减为纯广告过滤 |
@@ -14,6 +14,8 @@
 | S0030 | 删除搜索推荐 data | Body Rewrite jq |
 | S0032 | getFeedAd 返回空 200 | Map Local 空文本；没有启用原 JS 的 getFeedAd 分支 |
 | S0034 | 被原 URL 正则选中的 protobuf 页面净化 | 本模块自有可读 wire 编辑器，binary-body-mode=true、requires-body=true、max-size=1048576、timeout=5 |
+
+2026-10-31 配置警告修正：S0019 已是合集 `[Rule]` 的最后一条，但 Surge 会将模块规则插到主配置规则之前，单在模块内后移不能避免提前解析 DNS。因此为它添加 `no-resolve`；未解析出目标 IP 的域名请求将跳过该规则，后续规则继续匹配。这是相对冻结上游的明确行为调整，冻结源文件与其他规则保持原样。规则顺序及参数语义见 [Surge 模块说明](https://manual.nssurge.com/profile/module.html)和 [IP 规则说明](https://manual.nssurge.com/rules/ip.html)。
 
 ## JSON 边界
 

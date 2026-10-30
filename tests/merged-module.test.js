@@ -26,11 +26,14 @@ test('one installable MoyuAds artifact replaces all eight separate entries', () 
   const headings=content.match(/^\[.+\]$/gm);
   assert.equal(new Set(headings).size, headings.length, 'duplicate native section');
 });
-test('merged runtime preserves baseline predicates, jq bytes, stages and within-section ordering', () => {
+test('merged runtime preserves baseline except the explicit TieBa IP no-resolve change', () => {
   const actual=parseModule('MoyuAds');
   for (const section of ['Rule','URL Rewrite','Map Local','Body Rewrite','Script']) {
     const expected=names.flatMap(name => (oldSections(name)[section]||[]).map(text => ({
-      source:name, text:text.replace(/\/main\/[^/]+\/js\//g,'/main/MoyuAds/js/')
+      source:name, text:section==='Rule' && name==='TieBaAds' && text==='IP-CIDR,180.76.76.200/32,REJECT'
+        // Module rules precede profile domains: this one deliberate delta avoids a DNS lookup.
+        ? 'IP-CIDR,180.76.76.200/32,REJECT,no-resolve'
+        : text.replace(/\/main\/[^/]+\/js\//g,'/main/MoyuAds/js/')
     })));
     assert.deepEqual(actual[section].map(e => ({source:e.source,text:e.text})), expected, section);
   }

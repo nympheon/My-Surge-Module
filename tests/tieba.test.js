@@ -118,7 +118,7 @@ test('module keeps all eight predicates, native response semantics, ownership an
  const module=parseModule('TieBaAds'); const entries=Object.values(module).flat();
  for(const source of sourceActiveLines('TieBaAds')) {
    const entry=entries.filter(e=>e.ids.includes(source.id)); assert.equal(entry.length,1,source.id);
-   if(source.id==='S0019') assert.equal(entry[0].text,'IP-CIDR,180.76.76.200/32,REJECT');
+   if(source.id==='S0019') assert.equal(entry[0].text,'IP-CIDR,180.76.76.200/32,REJECT,no-resolve');
    else assert.equal(source.pattern,entry[0].options?.pattern || entry[0].tokens[source.id==='S0032'?0:1]);
  }
  assert.deepEqual(module['Map Local'][0].tokens.slice(1),['data-type=text','data=""']);
