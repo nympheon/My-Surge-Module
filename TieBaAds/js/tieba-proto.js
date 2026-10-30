@@ -5,7 +5,8 @@
  */
 (function () {
     'use strict';
-    // Handwritten selected schema. Unknown fields are never recursively guessed.
+    // Handwritten selected schema: 0 = varint, 2 = UTF-8 string, object = message.
+    // Unknown length-delimited fields stay opaque; they are not assumed to be strings.
     var live = { 1: 0 };
     var app = { 30: { 1: 0 }, 38: { 1: live } };
     var banner = { 1: app, 5: app };
@@ -100,6 +101,33 @@
         }
         throw new Error('unterminated scalar');
     }
+    // Validate bytes in-place, matching the source codec's fatal UTF-8 strings.
+    // Each known string is scanned once within the enclosing 1 MiB body bound.
+    // No decoded text is allocated and retained bytes are never re-encoded.
+    function validateUtf8(position, end) {
+        while (position < end) {
+            var lead = bytes[position++];
+            if (lead < 128) continue;
+            var remaining, secondMin = 128, secondMax = 191;
+            if (lead >= 194 && lead <= 223) remaining = 1;
+            else if (lead >= 224 && lead <= 239) {
+                remaining = 2;
+                if (lead === 224) secondMin = 160; // Exclude overlong three-byte forms.
+                if (lead === 237) secondMax = 159; // Exclude UTF-16 surrogate code points.
+            } else if (lead >= 240 && lead <= 244) {
+                remaining = 3;
+                if (lead === 240) secondMin = 144; // Exclude overlong four-byte forms.
+                if (lead === 244) secondMax = 143; // Stop at Unicode U+10FFFF.
+            } else throw new Error('invalid UTF-8 leading byte');
+            if (position + remaining > end) throw new Error('truncated UTF-8');
+            var second = bytes[position++];
+            if (second < secondMin || second > secondMax) throw new Error('invalid UTF-8 second byte');
+            for (var i = 1; i < remaining; i++) {
+                var continuation = bytes[position++];
+                if (continuation < 128 || continuation > 191) throw new Error('invalid UTF-8 continuation');
+            }
+        }
+    }
     function parse(start, end, schema, depth) {
         if (depth > 12) throw new Error('depth limit');
         var node = { start: start, end: end, fields: [] };
@@ -124,6 +152,7 @@
                 position = length.end + length.value;
                 if (position > end) throw new Error('length overflow');
                 if (known && typeof spec === 'object') field.child = parse(field.payload, position, spec, depth + 1);
+                else if (known && spec === 2) validateUtf8(field.payload, position);
             } else throw new Error('unsupported wire');
             if (position > end) throw new Error('truncated fixed field');
             field.end = position;

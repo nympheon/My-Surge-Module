@@ -207,3 +207,67 @@ check('FeedKV explicit empty final string overrides an earlier live discriminato
   msg(2,msg(2,msg(5,str(1,'is_live_card'),str(1,''),str(2,'1')))))), 'FrsPageResIdl');
 check('empty alaInfo and liveAnswer still count as present ads','excellent/personalized','1',
  data(msg(2,msg(113)),msg(2,video),msg(17)),data(msg(2,video)), 'PersonalizedResIdl');
+
+// I1: source-declared strings must be valid UTF-8 before any ad edit occurs.
+// These expect whole-body passthrough, including ads encountered before bad text.
+test('UTF-8 review counterexample passes through the invalid retained video string',()=>{
+ const input=Uint8Array.from([18,11,58,6,250,4,3,10,1,255,162,7,0]);
+ assert.throws(()=>decode('FrsPageResIdl',input),/Decoder error/);
+ assert.deepEqual(run(input,'frs/page'),{});
+});
+for(const [name,invalid] of [
+ ['illegal FF',[255]],['isolated continuation',[128]],['overlong two-byte C0',[192,128]],
+ ['overlong two-byte C1',[193,191]],['truncated two-byte',[194]],['bad two-byte continuation',[194,65]],
+ ['overlong three-byte',[224,159,191]],['truncated three-byte',[224,160]],['surrogate',[237,160,128]],
+ ['bad third byte',[225,128,65]],['overlong four-byte',[240,143,191,191]],['truncated four-byte',[240,144,128]],
+ ['above U+10FFFF',[244,144,128,128]],['illegal F5',[245,128,128,128]],
+ ['obsolete five-byte',[248,136,128,128,128]],['obsolete six-byte',[252,132,128,128,128,128]]]) {
+ test(`UTF-8 rejects ${name} after an otherwise removable target`,()=>{
+   const input=data(msg(116),msg(7,msg(79,msg(1,invalid))));
+   assert.throws(()=>decode('FrsPageResIdl',input),/Decoder error/);
+   assert.deepEqual(run(input,'frs/page'),{});
+ });
+}
+const badFeed=(key,value)=>data(msg(116),msg(126,msg(2,msg(2,msg(5,key,value)))));
+for(const [name,endpoint,cmd,type,input] of [
+ ['liveFuseForum','frs/page','1','FrsPageResIdl',data(msg(116,msg(1,[255])))],
+ ['novel card','pb/page','302001','PbPageResIdl',data(msg(6,msg(67,msg(1,[255]))))],
+ ['liveAnswer','excellent/personalized','1','PersonalizedResIdl',data(msg(17,msg(1,[255])))],
+ ['feed key','frs/page','1','FrsPageResIdl',badFeed(msg(1,[255]),str(2,'1'))],
+ ['feed value','frs/page','1','FrsPageResIdl',badFeed(str(1,'is_live_card'),msg(2,[255]))]
+]) {
+ test(`UTF-8 validates known ${name} strings even in removable messages`,()=>{
+   assert.throws(()=>decode(type,input),/Decoder error/);
+   assert.deepEqual(run(input,endpoint,cmd),{});
+ });
+}
+const utf8Boundaries=Uint8Array.from([0,127,194,128,223,191,224,160,128,237,159,191,238,128,128,239,191,191,240,144,128,128,244,143,191,191]);
+check('UTF-8 valid multibyte text and scalar boundaries remain byte-exact','frs/page','1',
+ data(msg(116,str(1,'直播😀')),msg(7,msg(79,msg(1,utf8Boundaries))),msg(7,msg(79,str(1,'中文 café 😀')))),
+ data(msg(7,msg(79,msg(1,utf8Boundaries))),msg(7,msg(79,str(1,'中文 café 😀')))), 'FrsPageResIdl');
+check('UTF-8 invalid bytes in unknown length fields stay opaque while known targets are removed','frs/page','1',
+ data(msg(99,[255,192,128,237,160,128]),msg(7,msg(79,msg(99,[255]),str(1,'有效'))),msg(116)),
+ data(msg(99,[255,192,128,237,160,128]),msg(7,msg(79,msg(99,[255]),str(1,'有效')))), 'FrsPageResIdl');
+test('UTF-8 checks run in native JavaScriptCore without TextDecoder',()=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'tieba-utf8-jsc-'));
+ try {
+  const fixtures=[
+   {input:data(msg(116),msg(7,msg(79,msg(1,[255])))),want:null},
+   {input:data(msg(116,str(1,'😀')),msg(7,msg(79,str(1,'中文 café 😀')))),want:data(msg(7,msg(79,str(1,'中文 café 😀'))))},
+   {input:data(msg(116),msg(99,[255])),want:data(msg(99,[255]))}
+  ];
+  const source=fs.readFileSync(path.join(root,script),'utf8');
+  let content='var BigInt=undefined, TextDecoder=undefined;\n';
+  for(const fixture of fixtures) {
+   content+=`var calls=0,result; var $request={url:${JSON.stringify(url('frs/page'))}}; var $response={status:200,body:new Uint8Array(${JSON.stringify(Array.from(fixture.input))})}; var $done=function(value){calls++;result=value;};\n`;
+   content+=source+'\n';
+   content+=`if(calls!==1) throw new Error('done count');\n`;
+   content+=fixture.want===null ? `if(JSON.stringify(result)!=='{}') throw new Error('invalid UTF-8 changed');\n` :
+    `if(!(result.body instanceof Uint8Array) || JSON.stringify(Array.from(result.body))!==${JSON.stringify(JSON.stringify(Array.from(fixture.want)))}) throw new Error('valid bytes changed');\n`;
+  }
+  content+="print('PASS');";
+  const file=path.join(directory,'utf8.js');fs.writeFileSync(file,content);
+  const result=spawnSync('/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc',[file],{encoding:'utf8',timeout:5000});
+  assert.equal(result.status,0,result.stdout+result.stderr);assert.match(result.stdout,/PASS/);
+ } finally {fs.rmSync(directory,{recursive:true,force:true});}
+});

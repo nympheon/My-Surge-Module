@@ -37,7 +37,7 @@ Surge 原生 Body Rewrite 使用平台自身体积限制；脚本的 1 MiB 限�
 | Old PbPage data，cmd=302001 | bannerList(12) 的 app.goodsInfo；另清理 pbBannerAd(5) 内 goodsInfo(30) 和 liveAd(38)；recomAlaInfo(55) 合并后的 liveId(1) 非零时删除；postList(6) 内 outerItem(54) 和 novelRecomCard(67) 删除 |
 | List PbPage data，cmd=309751 | firstFloor(6) 的 novelRecomCard(67) 删除；**保留 outerItem(54)** |
 
-被遍历的叶消息还检查源声明的 wire 类型：GoodsInfo.id(1) varint、LiveAdData.recomAlaInfo(1) message、AlaLiveInfo.liveId(1) varint、Item.itemId(1) varint、VideoInfo.videoMd5(1)/NovelRecomCard.iconUrl(1)/LiveAnswer.bannerUrl(1)/LiveFuseForum.onlineUsers(1) 为 length-delimited。
+被遍历的叶消息还检查源声明的 wire 类型：GoodsInfo.id(1) varint、LiveAdData.recomAlaInfo(1) message、AlaLiveInfo.liveId(1) varint、Item.itemId(1) varint、VideoInfo.videoMd5(1)/NovelRecomCard.iconUrl(1)/LiveAnswer.bannerUrl(1)/LiveFuseForum.onlineUsers(1) 为 UTF-8 string。
 
 原 `per_filter_video_thread=0` 默认保持不变。已有显式 string/object 参数 `per_filter_video_thread` 继续支持，非零才额外过滤 personalized 普通视频；模块没有新增选项。
 
@@ -45,6 +45,7 @@ Surge 原生 Body Rewrite 使用平台自身体积限制；脚本的 1 MiB 限�
 
 - 根 data 和其他 singular 消息出现多次时按 protobuf 合并语义处理。遍历同一路径的所有块，并用最后一次 scalar 值判断 activityhead、recomAlaInfo 与 FeedKV。重复集合元素各自独立，不错误合并帖子或 App。
 - 判断为保留时，不重序列化任何对应块；判断删除整个 singular 字段时，删除它的所有出现位置。只改写被修改祖先的长度前缀；其 tag 字节也保留。重复空 envelope 可以继续存在，避免改变未知内容及物理布局。
+- 源声明的 string 叶字段在任何净化操作前按原始字节校验 UTF-8，包括最终将被删除的消息内字符串。拒绝非法起始/续字节、截断、过长编码、代理码点和超过 U+10FFFF 的编码；整个输入放行。校验线性扫描各字符串，不依赖 TextDecoder，不解码或重编码原内容。未知 length-delimited 字段不视作字符串，继续不透明保留。
 - 未知字段和所有非目标 scalar/固定宽度/字节 payload 原样复制，包括不规范但可识别的 varint、超 JS 安全整数范围的大值、原排序与非广告重复字段。只有 tag/长度使用有界 uint32 数值运算。liveId 仅测试原始低 7 位是否全部为零，没有 64 位数值转换。
 - 仅遍历上述声明的消息；未知 length-delimited payload 保持不透明。对识别字段 wire 类型不匹配、截断、零 tag、溢出 varint、group wire type 3/4 或非法 wire type，整个响应放行，绝不输出部分结果。
 - 输入最大 1048576 字节，最多解析 100000 个字段、深度上限 12。超限整体放行。当前支持的声明路径远小于深度上限；字段预算避免恶意极密消息占用脚本资源。支持恰好 1 MiB 且包含未知大 payload 的合法帧。
@@ -59,6 +60,6 @@ Surge 原生 Body Rewrite 使用平台自身体积限制；脚本的 1 MiB 限�
 
 ## 验证范围
 
-`tests/tieba.test.js` 检验所有源行映射、实际 jq、原生 Surge 完整临时配置解析、各入口的手工 byte fixtures、冻结原脚本语义对照、重复 singular/last-scalar-wins、未知字段与 uint64、128 字节长度边界、1 MiB 边界、预算/坏帧回退，并在 macOS JavaScriptCore 执行相同发布脚本。共存检查组合本阶段已完成的六个模块。
+`tests/tieba.test.js` 检验所有源行映射、实际 jq、原生 Surge 完整临时配置解析、各入口的手工 byte fixtures、冻结原脚本语义对照、重复 singular/last-scalar-wins、未知字段与 uint64、128 字节长度边界、1 MiB 边界、预算/坏帧回退、已知字符串 UTF-8 验证，并在 macOS JavaScriptCore 执行相同发布脚本。共存检查组合本阶段已完成的六个模块。
 
 这些是本地离线和运行时夹具证据，不是 iOS、旧版本 Surge 或真实 App 验收。本阶段未启用任何模块、改变证书或用户 live profile，未推送发布。
