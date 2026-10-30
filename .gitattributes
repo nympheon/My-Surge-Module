@@ -1,1 +1,3 @@
-references/** -text
+# Frozen upstream evidence preserves original CRLF/trailing whitespace and hashes.
+# Exempt only references from formatting checks; authored runtime/docs stay checked.
+references/** -text -whitespace

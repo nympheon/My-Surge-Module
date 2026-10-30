@@ -59,6 +59,9 @@ function runJq(expression, body) {
 }
 // Only Surge globals are simulated; the owned script itself executes unchanged in an isolated VM.
 function runScript(relativePath, globals = {}) {
+  const capture = process.env.SURGE_JSC_CAPTURE_DIR;
+  const encode = capture ? require('../native-jsc.cjs').encodeBoundary : null;
+  const before = capture ? encode(globals) : null;
   const calls = [];
   const context = { ...globals, $done: value => calls.push(value) };
   vm.createContext(context);
@@ -75,6 +78,7 @@ function runScript(relativePath, globals = {}) {
   if (ArrayBuffer.isView(calls[0]?.body) && Object.prototype.toString.call(calls[0].body) === '[object Uint8Array]') {
     result.body = Uint8Array.from(calls[0].body);
   }
+  if (capture) fs.appendFileSync(path.join(capture, process.pid + '.jsonl'), JSON.stringify({path:relativePath,globals:before,expected:encode(calls[0])}) + '\n');
   return result;
 }
 // Isolated full config, never a current-profile API. %APPEND% is resolved as module installation does.

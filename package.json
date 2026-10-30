@@ -1,6 +1,6 @@
 {
   "name": "surge-independent-modules",
   "private": true,
-  "scripts": { "test": "node --test tests/*.test.js" },
+  "scripts": { "test": "node --test tests/*.test.js", "test:jsc": "node tests/native-jsc.cjs" },
   "engines": { "node": ">=18" }
 }
