@@ -24,12 +24,12 @@
 
 所有 URL 正则逐字保留，包括 mtop 点号未转义、HTTP/HTTPS 支持、S0047 宽前缀。Surge 会依次应用匹配的 Body Rewrite：shade 路径经宽 search 规则时无 resultList 则保持；discover 删除 resultList 后宽 search 也不重建它。实际 jq 流水线回归覆盖这两个重叠路径。
 
-jq 要求根和 data 为对象，目标数组存在；S0033 同时要求 homeTopList/sections 数组；S0041 要求 ability 与 container.sections 数组。过滤前校验每项所需判别字段（包括嵌套对象）。未知形态、缺失 data、错误信封和未知数组项整份保留。源对空 homeTopList 会产生 `[null]`，此完整原行为保留；未“修正”为 `[]`。字段清空和删除语义保留，不缩减为仅去广告。
+jq 先识别 Goofish/MTop 错误信封：ret 数组任一字符串条目以 FAIL_ 开头（包括 FAIL_SYS_、FAIL_BIZ_）时整份保留，即使 data 符合目标结构，也不清洗诊断字段。SUCCESS::调用成功 和 ret 缺省的健康信封继续原净化；不把其他提供方的 code=0 规则套用于 Goofish，code=200 与 SUCCESS 的成功样本也通过。jq 要求根和 data 为对象，目标数组存在；S0033 同时要求 homeTopList/sections 数组；S0041 要求 ability 与 container.sections 数组。过滤前校验每项所需判别字段（包括嵌套对象）。未知形态、缺失 data、错误信封和未知数组项整份保留。源对空 homeTopList 会产生 `[null]`，此完整原行为保留；未“修正”为 `[]`。字段清空和删除语义保留，不缩减为仅去广告。
 
 S0051 原来是响应改写；Surge 移为请求阶段短路以实际阻止 AMDC 网络请求，输出相同文本。大小写不敏感查找 header 名，UA 值匹配仍区分大小写；所有原 UA 分支均保留。没有读取正文或 JSON，不会改写数字，无需 requires-body/max-size；timeout=5，恰好一处 $done。原始脚本及既有 StartUpAds/js/amdc.js 仅作参考，安装不依赖它们。
 
 Map Local 使用 `data-type=text data=""` 原生默认 200，不伪造 JSON 字典或图片。MITM 保留两个原域名，以 `%APPEND%` 追加；AMDC 原谓词仅 HTTP，无需解密更多主机。jq 原生体积限制由 Surge 控制（iOS 1MB、Mac 10MB），无额外脚本参数。
 
-本地验证：11 个 jq 表达式均与冻结原 jq 的健康样本完整差分；未知结构、数值 token、非法 JSON；所有 AMDC UA 分支、缺失/混合大小写/非字符串 UA；Node VM、原生 macOS JavaScriptCore、单模块与组合 Surge 完整配置解析。未进行 iOS 或应用内全流程验收。
+本地验证：11 个 jq 表达式均与冻结原 jq 的健康样本完整差分；全部 11 个 jq 端点的形态兼容错误信封、SUCCESS/ret 缺省成功信封；未知结构、数值 token、非法 JSON；所有 AMDC UA 分支、缺失/混合大小写/非字符串 UA；Node VM、原生 macOS JavaScriptCore、单模块与组合 Surge 完整配置解析。未进行 iOS 或应用内全流程验收。
 
 参考：[Surge Body Rewrite](https://manual.nssurge.com/http/body-rewrite.html)、[请求脚本 response 短路](https://manual.nssurge.com/scripting/http-request.html)、[Map Local](https://manual.nssurge.com/http/map-local.html)。

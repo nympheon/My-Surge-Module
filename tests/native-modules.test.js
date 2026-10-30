@@ -163,3 +163,36 @@ test('Goofish search discovery and shade survive the overlapping broad search pr
     assert.deepEqual(actual,want);
   }
 });
+// Shape checks cannot distinguish diagnostic payloads from successful data.
+// Removing either provider marker guard must fail these real-jq regressions.
+for (const [name,id,body] of [
+  ['BiliBiliComicsAds','S0026',{code:-101,message:'expired',data:[{diagnostic:'keep'}]}],
+  ['BiliBiliComicsAds','S0029',{code:-101,message:'expired',data:{flash:{id:7},operate:{id:8}}}],
+  ['GoofishAds','S0027',{ret:['FAIL_SYS_SESSION_EXPIRED::Session expired'],data:{strategies:[{diagnostic:'keep'}]}}]
+]) {
+  test(`${name} ${id}: explicit error envelope regression preserves diagnostic payload`, () => {
+    assert.deepEqual(JSON.parse(runJq(expressionFor(entryFor(name,id)),body)),body);
+  });
+}
+for (const name of ['BiliBiliComicsAds','GoofishAds']) {
+  for (const [id,data] of Object.entries(cases[name])) {
+    test(`${name} ${id}: provider error envelope takes precedence over supported data shape`, () => {
+      const markers = name === 'BiliBiliComicsAds'
+        ? [{code:-101,message:'expired'},{code:1,message:'invalid request'}]
+        : [{ret:['FAIL_SYS_SESSION_EXPIRED::Session expired']},{ret:['SUCCESS::调用成功','FAIL_BIZ_INVALID::Invalid request']}];
+      for (const marker of markers) {
+        const body={...marker,data,keep:'diagnostic'};
+        assert.deepEqual(JSON.parse(runJq(expressionFor(entryFor(name,id)),body)),body);
+      }
+      // Successful and marker-absent responses retain every original purification action.
+      // Goofish's unrelated code=200 must not inherit Bili's code=0 convention.
+      const healthy = name === 'BiliBiliComicsAds'
+        ? [{data},{code:0,data}]
+        : [{data},{code:200,ret:['SUCCESS::调用成功'],data}];
+      const upstream = sourceActiveLines(name).find(source => source.id === id).text.split('jsonjq-response-body ')[1].slice(1,-1);
+      for (const body of healthy) {
+        assert.deepEqual(JSON.parse(runJq(expressionFor(entryFor(name,id)),body)),JSON.parse(runJq(upstream,body)));
+      }
+    });
+  }
+}
