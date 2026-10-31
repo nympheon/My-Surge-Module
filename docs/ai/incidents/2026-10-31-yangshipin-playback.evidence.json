@@ -1,0 +1,73 @@
+{
+  "case_id": "2026-10-31-yangshipin-playback",
+  "archived_on": "2026-11-01",
+  "timezone": "Asia/Shanghai",
+  "status": "mitigation_observed_root_cause_unconfirmed",
+  "source": "User reports, remote Surge CLI rule matches, sanitized local monitoring aggregates",
+  "environment": {
+    "surge_ios_version": "5.23.0 (3867)",
+    "controller_protocol": 25,
+    "mode": "rule"
+  },
+  "user_preference": {
+    "avoid_rule_sets": [
+      "blackmatrix7 Advertising_All.list",
+      "privacy-protection-tools anti-ad-surge.txt"
+    ],
+    "remind_before_enable_import_recommend_restore": true
+  },
+  "observed_rule_transition": {
+    "domains": [
+      "mtrace.ysp.cctv.cn",
+      "btrace.ysp.cctv.cn"
+    ],
+    "before": "REJECT via Advertising_All; after disabling only that set, REJECT via anti-AD",
+    "after_both_disabled_and_applied": "DIRECT via ChinaMax_All.list"
+  },
+  "approximate_playback_start": "2026-10-31T22:23:43+08:00",
+  "telemetry_disconnect": "2026-10-31T22:24:56+08:00",
+  "engine_restart": "2026-10-31T22:31:28+08:00",
+  "restored_collection_ready": "2026-10-31T22:32:28+08:00",
+  "fifteen_minute_check": {
+    "at": "2026-10-31T22:39:11+08:00",
+    "seconds_since_user_start": 929,
+    "distinct_observed_requests_after_reconnect": 237
+  },
+  "closed_at": "2026-10-31T22:42:34+08:00",
+  "restored_collection_final": {
+    "counting_method": "Latest snapshot per request ID; recent/active snapshots plus live request/log streams",
+    "distinct_observed_requests": 300,
+    "http_200_playlists": 180,
+    "http_206_segments": 102,
+    "tcp_or_https_tunnels_without_http_status": 18,
+    "completed_at_last_observation": 299,
+    "active_at_last_observation": 1,
+    "rejected": 0,
+    "failed": 0,
+    "http_4xx_5xx_observed": 0,
+    "hosts": {
+      "bkhlsliveali-cdn.ysp.cctv.cn": 282,
+      "apschn.ysp.cctv.cn": 17,
+      "haccess.yangshipin.cn": 1
+    }
+  },
+  "not_established": [
+    "Each rule set or trace domain alone causes playback failure",
+    "Trace domains issue or renew playback authorization",
+    "A fixed five-minute token lifetime",
+    "The cause of controller reachability loss",
+    "Restart alone fixed playback"
+  ],
+  "limitations": [
+    "Telemetry gap",
+    "Two complete rule sets disabled together",
+    "Surge restarted",
+    "CDN changed",
+    "No decrypted trace request/response protocol analysis",
+    "Observed records are not guaranteed to cover all requests"
+  ],
+  "references": [
+    "https://www.rfc-editor.org/rfc/rfc8216.html#section-6.3",
+    "https://help.aliyun.com/zh/cdn/user-guide/access-control-troubleshooting-guide"
+  ]
+}
