@@ -2,7 +2,7 @@
   "case_id": "2026-10-31-yangshipin-playback",
   "archived_on": "2026-11-01",
   "timezone": "Asia/Shanghai",
-  "status": "mitigation_observed_root_cause_unconfirmed",
+  "status": "anti_ad_issue_identified_by_user_retest_blackmatrix7_restored_ok",
   "source": "User reports, remote Surge CLI rule matches, sanitized local monitoring aggregates",
   "environment": {
     "surge_ios_version": "5.23.0 (3867)",
@@ -11,10 +11,14 @@
   },
   "user_preference": {
     "avoid_rule_sets": [
-      "blackmatrix7 Advertising_All.list",
       "privacy-protection-tools anti-ad-surge.txt"
     ],
-    "remind_before_enable_import_recommend_restore": true
+    "remind_before_enable_import_recommend_restore": true,
+    "restored_rule_sets": [
+      "blackmatrix7 Advertising_All.list"
+    ],
+    "updated_on": "2026-11-01",
+    "blackmatrix7_avoidance_advice_withdrawn": true
   },
   "observed_rule_transition": {
     "domains": [
@@ -22,7 +26,8 @@
       "btrace.ysp.cctv.cn"
     ],
     "before": "REJECT via Advertising_All; after disabling only that set, REJECT via anti-AD",
-    "after_both_disabled_and_applied": "DIRECT via ChinaMax_All.list"
+    "after_both_disabled_and_applied": "DIRECT via ChinaMax_All.list",
+    "scope": "Initial 2026-10-31 investigation only; not the routing state after blackmatrix7 was restored"
   },
   "approximate_playback_start": "2026-10-31T22:23:43+08:00",
   "telemetry_disconnect": "2026-10-31T22:24:56+08:00",
@@ -49,16 +54,39 @@
       "bkhlsliveali-cdn.ysp.cctv.cn": 282,
       "apschn.ysp.cctv.cn": 17,
       "haccess.yangshipin.cn": 1
-    }
+    },
+    "scope": "Initial 2026-10-31 dual-disabled collection; not the later blackmatrix7 retest"
   },
   "not_established": [
-    "Each rule set or trace domain alone causes playback failure",
+    "Which individual anti-AD entry caused the playback issue",
+    "Either trace domain alone necessarily causes playback failure",
     "Trace domains issue or renew playback authorization",
     "A fixed five-minute token lifetime",
     "The cause of controller reachability loss",
-    "Restart alone fixed playback"
+    "Restart alone fixed playback",
+    "Routing decisions for the trace domains after blackmatrix7 was restored"
   ],
-  "limitations": [
+  "references": [
+    "https://www.rfc-editor.org/rfc/rfc8216.html#section-6.3",
+    "https://help.aliyun.com/zh/cdn/user-guide/access-control-troubleshooting-guide"
+  ],
+  "updated_on": "2026-11-01",
+  "follow_up_retest": {
+    "reported_on": "2026-11-01",
+    "evidence_source": "User report in this chat",
+    "user_report": "anti-AD caused the issue; blackmatrix7 was installed back and tested without problems",
+    "blackmatrix7_result": "restored_and_tested_ok_by_user",
+    "rule_set_level_conclusion": "anti-AD affects playback in the reported setup",
+    "current_avoidance": "anti-AD only",
+    "ai_captured_retest_traffic": false,
+    "not_reported": [
+      "Exact rule revisions",
+      "Retest duration",
+      "Per-domain routing after restoring blackmatrix7",
+      "Decrypted trace requests or responses"
+    ]
+  },
+  "initial_investigation_limitations": [
     "Telemetry gap",
     "Two complete rule sets disabled together",
     "Surge restarted",
@@ -66,8 +94,9 @@
     "No decrypted trace request/response protocol analysis",
     "Observed records are not guaranteed to cover all requests"
   ],
-  "references": [
-    "https://www.rfc-editor.org/rfc/rfc8216.html#section-6.3",
-    "https://help.aliyun.com/zh/cdn/user-guide/access-control-troubleshooting-guide"
+  "remaining_limitations": [
+    "Follow-up retest is user-reported without new AI traffic capture",
+    "Individual anti-AD entry and protocol mechanism are not isolated"
   ]
 }
+
